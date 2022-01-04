@@ -65,10 +65,8 @@ export default {
   fontawesome: {
     component: 'FaIcon',
     suffix: false,
-    addCss: false,
     icons: {
-      solid: true,
-      brands: true,
+      solid: ['faFire', 'faPlus', 'faChartPie', 'faHatWizard', 'faBiohazard'],
     },
   },
 }

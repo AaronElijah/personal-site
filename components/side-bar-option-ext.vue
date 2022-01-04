@@ -1,6 +1,6 @@
 <template>
   <div class="side-bar-icon-ext">
-    <fa-icon :icon="icon" transform="shrink-8" />
+    <fa-icon :icon="icon" class="scale-150" />
     <span class="tooltip">{{ name }}</span>
   </div>
 </template>
@@ -22,6 +22,6 @@ export default {
 }
 
 .side-bar-icon-ext > .tooltip {
-  @apply absolute w-auto p-2 m-2 min-w-max left-14 rounded-md shadow-md text-white bg-gray-900 text-xs font-bold origin-left;
+  @apply absolute inset-0 w-auto p-2 m-2 min-w-max left-14 rounded-md shadow-md text-white bg-gray-900 text-xs font-bold origin-left;
 }
 </style>
