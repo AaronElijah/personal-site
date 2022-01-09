@@ -12,11 +12,10 @@
         />
       </div>
       <div
-        class="absolute top-0 left-[3.75rem] h-screen w-1 cursor-move bg-gray-500"
+        class="fixed top-0 left-[3.75rem] h-screen w-1 cursor-move bg-gray-500"
         @mousedown="onMouseDown"
       />
-      <div class="ml-[4.25rem]">
-        <div>{{ start }} - {{ current }} - {{ isExtended }}</div>
+      <div class="ml-[3.75rem]">
         <Nuxt />
       </div>
     </div>
@@ -34,11 +33,10 @@
         />
       </div>
       <div
-        class="absolute top-0 left-[12.75rem] h-screen w-1 cursor-move bg-gray-500"
+        class="fixed top-0 left-[12.75rem] h-full w-1 cursor-move bg-gray-500"
         @mousedown="onMouseDown"
       />
-      <div class="ml-[13.25rem]">
-        <div>{{ start }} - {{ current }} - {{ isExtended }}</div>
+      <div class="ml-[12.75rem]">
         <Nuxt />
       </div>
     </div>
@@ -90,7 +88,6 @@ export default Vue.extend({
       this.isExtended = !oldExtended
         ? val > this.start + 150
         : val > this.start - 150
-
       if (this.isExtended !== oldExtended) {
         this.start = val
       }

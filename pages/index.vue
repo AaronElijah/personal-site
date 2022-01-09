@@ -1,47 +1,33 @@
 <template>
   <div>
-    <h1>Hello world!</h1>
-    <div class="w-40 h-40 bg-white flex flex-col">
-      <div class="flex-1 bg-yellow-600 rounded-full scale-95">
-        <div
-          class="w-[10%] h-[10%] rounded-full bg-black relative left-[55%] top-1/4"
-        />
-        <div class="pacman-mouth" />
-      </div>
-    </div>
+    <scroll-pacman :wheel-movement="wheelMovement" />
   </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
+import ScrollPacman from '~/components/compounds/scroll-pacman.vue'
 
 export default Vue.extend({
   name: 'IndexPage',
+  components: {
+    'scroll-pacman': ScrollPacman,
+  },
   layout: 'side-bar',
+  data() {
+    return {
+      wheelYCount: 0,
+      wheelMovement: 0,
+    }
+  },
+  watch: {
+    wheelYCount(val: number, oldVal: number) {
+      this.wheelMovement = val - oldVal
+    },
+  },
+  mounted() {
+    window.addEventListener('wheel', (event: WheelEvent) => {
+      this.wheelYCount += event.deltaY
+    })
+  },
 })
 </script>
-<style lang="css" scoped>
-.pacman-mouth {
-  background: white;
-  height: 100%;
-  width: 100%;
-  position: relative;
-  clip-path: polygon(110% 10%, 50% 40%, 110% 70%);
-  animation-name: eat;
-  animation-duration: 0.7s;
-  animation-iteration-count: infinite;
-}
-
-@keyframes eat {
-  0% {
-    clip-path: polygon(110% 40%, 50% 40%, 110% 40%);
-  }
-
-  50% {
-    clip-path: polygon(110% 10%, 50% 40%, 110% 70%);
-  }
-
-  100% {
-    clip-path: polygon(110% 40%, 50% 40%, 110% 40%);
-  }
-}
-</style>
