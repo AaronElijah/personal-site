@@ -5,14 +5,14 @@
         class="w-[10%] h-[10%] rounded-full bg-black relative left-[55%] top-1/4"
       />
     </div>
-    <div class="pacman-mouth" />
+    <div class="pacman-mouth z-postbox" />
   </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({ name: 'PacmanCharacter' })
 </script>
-<style lang="css" scoped>
+<style lang="postcss" scoped>
 .container {
   width: 10rem;
   height: 10rem;
@@ -20,7 +20,6 @@ export default Vue.extend({ name: 'PacmanCharacter' })
 }
 
 .pacman-mouth {
-  z-index: 10;
   background-color: inherit;
   height: 100%;
   width: 100%;

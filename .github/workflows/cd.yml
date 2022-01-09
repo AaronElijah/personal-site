@@ -1,10 +1,7 @@
-name: ci
+name: cd
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
     branches:
       - master
 
@@ -43,9 +40,11 @@ jobs:
       - name: Install dependencies 👨🏻‍💻
         run: yarn
 
-      - name: Run linter 👀
-        run: yarn lint
+      - name: Generate static files
+        run: yarn generate
 
-      # find a way to run app in background and then run tests
-      # - name: Run tests 🧪
-      #   run: npx playwright install --with-deps && && yarn dev && yarn test
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
