@@ -12,7 +12,7 @@
         />
       </div>
       <div
-        class="fixed top-0 left-[3.75rem] h-screen w-1 cursor-move bg-gray-500"
+        class="fixed top-0 left-[3.75rem] h-screen w-1 cursor-move bg-gray-500 z-10"
         @mousedown="onMouseDown"
       />
       <div class="ml-[3.75rem]">
@@ -44,24 +44,25 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
+import { CombinedVueInstance } from 'vue/types/vue'
 
-function onMouseDown(e: MouseEvent) {
-  e.preventDefault()
-  this.start = e.clientX
-  document.onmouseup = closeDragElement.bind(this)
-  document.onmousemove = elementDrag.bind(this)
-}
-
-function elementDrag(e: MouseEvent) {
-  e.preventDefault()
-  // calculate the new cursor position:
-  this.current = e.clientX
-}
-
-function closeDragElement() {
-  document.onmouseup = null
-  document.onmousemove = null
-}
+type ISideBar = CombinedVueInstance<
+  Vue,
+  {
+    current: number
+    start: number
+    isExtended: boolean
+    sidebarIcons: {
+      icon: string
+      name: string
+    }[]
+  },
+  {
+    onMouseDown: (e: MouseEvent) => void
+  },
+  unknown,
+  Readonly<Record<keyof Vue, any>>
+>
 
 export default Vue.extend({
   name: 'SideBar',
@@ -73,12 +74,12 @@ export default Vue.extend({
       sidebarIcons: [
         {
           icon: 'fire',
-          name: 'home by the fire 🧘🏻',
+          name: 'Home 🧘🏻',
         },
-        { icon: 'chart-pie', name: 'cool charts ⚡' },
-        { icon: 'plus', name: 'blogs 📜' },
-        { icon: 'hat-wizard', name: 'code wizardy 🦄' },
-        { icon: 'biohazard', name: 'risky! ⚠️' },
+        { icon: 'chart-pie', name: 'Charts ⚡' },
+        { icon: 'plus', name: 'Blogs 📜' },
+        { icon: 'hat-wizard', name: 'Wizardy 🦄' },
+        { icon: 'biohazard', name: 'Risky! ⚠️' },
       ],
     }
   },
@@ -94,7 +95,30 @@ export default Vue.extend({
     },
   },
   methods: {
-    onMouseDown,
+    onMouseDown(e: MouseEvent) {
+      e.preventDefault()
+      const this_ = this as unknown as ISideBar
+      this_.start = e.clientX
+
+      function elementDrag(e: MouseEvent) {
+        e.preventDefault()
+        // calculate the new cursor position:
+        this_.current = e.clientX
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null
+        document.onmousemove = null
+      }
+
+      document.onmouseup = closeDragElement.bind(this_)
+      document.onmousemove = elementDrag.bind(this_)
+    },
   },
 })
 </script>
+<style lang="postcss" scoped>
+div {
+  @apply z-shed;
+}
+</style>
