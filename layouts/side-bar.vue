@@ -119,6 +119,6 @@ export default Vue.extend({
 </script>
 <style lang="postcss" scoped>
 div {
-  @apply z-shed;
+  z-index: 50;
 }
 </style>
