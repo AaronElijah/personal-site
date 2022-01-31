@@ -1,6 +1,8 @@
 <template>
   <div :class="iconClassObject">
-    <fa-icon :icon="icon" class="scale-150" />
+    <a :href="href">
+      <fa-icon :icon="icon" class="scale-150" />
+    </a>
     <span :class="spanClassObject">{{ name }}</span>
   </div>
 </template>
@@ -10,6 +12,7 @@ export default {
     icon: { type: String, required: true },
     name: { type: String, required: true },
     isExtended: { type: Boolean, default: false },
+    href: { type: String, default: '/' },
   },
   computed: {
     iconClassObject() {

@@ -30,6 +30,7 @@
           :icon="sidebarIcon.icon"
           :name="sidebarIcon.name"
           :is-extended="isExtended"
+          :href=""
         />
       </div>
       <div
@@ -55,6 +56,7 @@ type ISideBar = CombinedVueInstance<
     sidebarIcons: {
       icon: string
       name: string
+      href: string
     }[]
   },
   {
@@ -75,11 +77,12 @@ export default Vue.extend({
         {
           icon: 'fire',
           name: 'Home 🧘🏻',
+          href: '/',
         },
-        { icon: 'chart-pie', name: 'Charts ⚡' },
-        { icon: 'plus', name: 'Blogs 📜' },
-        { icon: 'hat-wizard', name: 'Wizardy 🦄' },
-        { icon: 'biohazard', name: 'Risky! ⚠️' },
+        { icon: 'chart-pie', name: 'Charts ⚡', href: '/' },
+        { icon: 'plus', name: 'Blogs 📜', href: '/space' },
+        { icon: 'hat-wizard', name: 'Wizardy 🦄', href: '/' },
+        { icon: 'biohazard', name: 'Risky! ⚠️', href: '/' },
       ],
     }
   },

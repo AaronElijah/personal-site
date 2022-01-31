@@ -4,6 +4,7 @@
     @wheel.prevent
   >
     <ghost-character
+      id="pinky"
       class="absolute"
       name="pinky"
       :style="{
@@ -13,6 +14,7 @@
       :is-vulnerable="isEating"
     />
     <ghost-character
+      id="blinky"
       class="absolute"
       name="blinky"
       :style="{
@@ -22,6 +24,7 @@
       :is-vulnerable="isEating"
     />
     <ghost-character
+      id="inky"
       class="absolute"
       name="inky"
       :style="{
@@ -31,6 +34,7 @@
       :is-vulnerable="isEating"
     />
     <ghost-character
+      id="clyde"
       class="absolute"
       name="clyde"
       :style="{
@@ -47,7 +51,6 @@
         top: `${characterPositions.clyde.y}%`,
       }"
     />
-
     <slot />
   </div>
 </template>
@@ -168,43 +171,28 @@ export default {
       const this_ = this as unknown as IScrollPacman
       const characters = Object.keys(this_.characterPositions) as Characters[]
 
-      if (this_.animationStep < 50) {
-        if (val >= 0) {
-          // Going forward being chased
-          for (const character of characters) {
-            const displacement = character === 'pacman' ? 2 : 2.5
-            this_.characterPositions[character].x += displacement
-          }
+      const isBackwards = val < 0
+      // Direction is relative to stage in animation
+      // If animation is where pacman is eating (i.e. animationStep >= 50), then direction is 'right->left' positive
+      // If animation is pacman being chased (i.e. animationStep < 50), then direction is 'left->right' positive
+      const direction = -1 * (2 * +isBackwards - 1)
 
-          this_.animationStep += 0.5
-        } else if (val < 0 && this_.animationStep > 0) {
-          // Going backwards being chased
-          for (const character of characters) {
-            const displacement = character === 'pacman' ? 2 : 2.5
-            this_.characterPositions[character].x -= displacement
-          }
+      if (isBackwards && this_.animationStep <= 0) return
 
-          this_.animationStep -= 0.5
-        }
-      } else if (this_.animationStep >= 50) {
-        if (val >= 0) {
-          // Going forward on the eat animation
-          for (const character of characters) {
-            const displacement = character === 'pacman' ? 2.5 : 2
-            this_.characterPositions[character].x -= displacement
-          }
-
-          this_.animationStep += 0.5
-        } else if (val < 0) {
-          // Going backward (actually left->right) on the eat animation
-          for (const character of characters) {
-            const displacement = character === 'pacman' ? 2.5 : 2
-            this_.characterPositions[character].x += displacement
-          }
-
-          this_.animationStep -= 0.5
-        }
+      // Going forward (+ve) on the eat animation (i.e. left->right) or backward
+      // animation direction is
+      for (const character of characters) {
+        this_.characterPositions[character].x +=
+          this_.animationStep < 50
+            ? character === 'pacman'
+              ? direction * 2
+              : direction * 2.5
+            : character === 'pacman'
+            ? -direction * 2.5
+            : -direction * 2
       }
+
+      this_.animationStep += direction * 0.5
     },
     animationStep(val: number, oldVal: number) {
       const this_ = this as unknown as IScrollPacman
