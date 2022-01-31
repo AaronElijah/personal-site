@@ -2169,6 +2169,11 @@
     "@types/webpack" "^4"
     terser "^4.6.13"
 
+"@types/three@0.137.0":
+  version "0.137.0"
+  resolved "https://registry.npmjs.org/@types/three/-/three-0.137.0.tgz#6047e0658262b4de7c464a40288f9071ddd9a6d5"
+  integrity sha512-Xc5EAlfYmgrCLI/VlSVqiRJAtzhWF0Rw2jSq48nqJy+Hcb5sfDOXyfZn1+RNcHyi9l8CeCAXCZygO8IyeOJVEA==
+
 "@types/uglify-js@*":
   version "3.13.1"
   resolved "https://registry.npmjs.org/@types/uglify-js/-/uglify-js-3.13.1.tgz#5e889e9e81e94245c75b6450600e1c5ea2878aea"
@@ -9677,7 +9682,7 @@ purgecss@^4.0.3:
     postcss "^8.3.5"
     postcss-selector-parser "^6.0.6"
 
-push-dir@^0.4.1:
+push-dir@0.4.1:
   version "0.4.1"
   resolved "https://registry.npmjs.org/push-dir/-/push-dir-0.4.1.tgz#29481eacd9c2106bbb7941db6d37d122a071ecb4"
   integrity sha1-KUgerNnCEGu7eUHbbTfRIqBx7LQ=
@@ -11187,6 +11192,11 @@ thread-loader@^3.0.4:
     loader-utils "^2.0.0"
     neo-async "^2.6.2"
     schema-utils "^3.0.0"
+
+three@0.137.5:
+  version "0.137.5"
+  resolved "https://registry.npmjs.org/three/-/three-0.137.5.tgz#a1e34bedd0412f2d8797112973dfadac78022ce6"
+  integrity sha512-rTyr+HDFxjnN8+N/guZjDgfVxgHptZQpf6xfL/Mo7a5JYIFwK6tAq3bzxYYB4Ae0RosDZlDuP+X5aXDXz+XnHQ==
 
 through2@^2.0.0:
   version "2.0.5"
