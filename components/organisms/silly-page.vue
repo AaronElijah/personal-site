@@ -1,20 +1,14 @@
 <template>
   <div id="home-page-container" class="bg-green-300">
     <scroll-pacman :wheel-movement="wheelMovement">
-      <div
-        id="title-card"
-        class="text-center border-[1rem] border-double border-blue-800 title-box"
-      >
-        <h1 class="text-8xl">{{ heading }}</h1>
-        <h3 class="text-4xl">{{ subheading }}</h3>
-      </div>
+      <title-card :viewport-mouse-position="viewportMousePosition" />
     </scroll-pacman>
   </div>
 </template>
 <script lang="ts">
-import { FetchReturn } from '@nuxt/content/types/query-builder'
 import Vue from 'vue'
 import ScrollPacman from '~/components/compounds/scroll-pacman.vue'
+import TitleCard from '~/components/compounds/title-card.vue'
 
 function splash(x: number, y: number) {
   const homePage = document.querySelector('#home-page-container') as Element
@@ -51,6 +45,7 @@ export default Vue.extend({
   name: 'SillyPage',
   components: {
     'scroll-pacman': ScrollPacman,
+    'title-card': TitleCard,
   },
   data() {
     return {
@@ -61,42 +56,9 @@ export default Vue.extend({
       subheading: '',
     }
   },
-  async fetch() {
-    const { heading, subheading } = (await this.$content(
-      'home'
-    ).fetch()) as FetchReturn & { heading: string; subheading: string }
-    this.heading = heading
-    this.subheading = subheading
-  },
   watch: {
     wheelYCount(val: number, oldVal: number) {
       this.wheelMovement = val - oldVal
-    },
-    viewportMousePosition(val: { x: number; y: number }) {
-      const titleCard = document.querySelector('#title-card') as HTMLDivElement
-      const rect = titleCard.getBoundingClientRect()
-      const vectorToMouse = {
-        x: val.x - (rect.x + 0.5 * rect.width),
-        y: val.y - (rect.y + 0.5 * rect.height),
-      }
-      const angle = Math.atan(vectorToMouse.y / vectorToMouse.x)
-
-      titleCard.style.setProperty(
-        '--box-shadow-top',
-        `${Math.abs(Math.sin(angle) * 2)}rem`
-      )
-      titleCard.style.setProperty(
-        '--box-shadow-bottom',
-        `${-Math.abs(Math.sin(angle) * 2)}rem`
-      )
-      titleCard.style.setProperty(
-        '--box-shadow-left',
-        `${Math.abs(Math.cos(angle) * 2)}rem`
-      )
-      titleCard.style.setProperty(
-        '--box-shadow-right',
-        `${-Math.abs(Math.cos(angle) * 2)}rem`
-      )
     },
   },
   mounted() {
@@ -126,14 +88,3 @@ export default Vue.extend({
   },
 })
 </script>
-<style scoped>
-.title-box {
-  --box-shadow-top: 2rem;
-  --box-shadow-right: -2rem;
-  --box-shadow-bottom: -2rem;
-  --box-shadow-left: 2rem;
-
-  box-shadow: var(--box-shadow-right) var(--box-shadow-bottom) darkturquoise,
-    var(--box-shadow-left) var(--box-shadow-top) lightcoral;
-}
-</style>
