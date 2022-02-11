@@ -68,7 +68,7 @@ export default {
   content: {},
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {},
+  build: { transpile: ['three'] },
 
   target: 'static', // default is 'server'
 

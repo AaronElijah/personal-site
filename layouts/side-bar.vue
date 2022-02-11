@@ -9,6 +9,7 @@
           :key="sidebarIcon.icon"
           :icon="sidebarIcon.icon"
           :name="sidebarIcon.name"
+          :href="sidebarIcon.href"
         />
       </div>
       <div
@@ -30,7 +31,7 @@
           :icon="sidebarIcon.icon"
           :name="sidebarIcon.name"
           :is-extended="isExtended"
-          :href=""
+          :href="sidebarIcon.href"
         />
       </div>
       <div

@@ -3,7 +3,7 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import SillyPage from '~/components/molecules/silly-page.vue'
+import SillyPage from '~/components/organisms/silly-page.vue'
 
 export default Vue.extend({
   name: 'IndexPage',
