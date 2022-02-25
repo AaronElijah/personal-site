@@ -1,0 +1,1 @@
+__NUXT_JSONP__("/", {data:[{}],fetch:{"data-v-1d3705f8:0":{heading:"Hello",subheading:"I am Aaron Elijah"}},mutations:void 0});
