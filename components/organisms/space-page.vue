@@ -4,7 +4,7 @@
 <script lang="ts">
 import * as THREE from 'three'
 
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Vue from 'vue'
 import { addSpaceBackground } from '~/lib/space/background'
 import {
@@ -18,18 +18,14 @@ import {
 } from '~/lib/space/shapes'
 import { addStarDestroyer } from '~/lib/space/spaceships'
 import { addPointLight, addAmbientLight } from '~/lib/space/lighting'
+import { addPerspectiveCamera } from '~/lib/space/camera'
 
 export default Vue.extend({
   name: 'SpacePage',
   async mounted() {
     const scene = new THREE.Scene()
 
-    const camera = new THREE.PerspectiveCamera(
-      75, // 75 degree viewport out of 360
-      window.innerWidth / window.innerHeight, // aspect ratio
-      0.1, // inner view frustrum
-      1000 // outer view frustrum - basically we can see everything from the camera lense
-    )
+    const camera = addPerspectiveCamera()
 
     // renderer renders out the actual grapics
     const renderer = new THREE.WebGLRenderer({
@@ -43,8 +39,6 @@ export default Vue.extend({
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
 
-    camera.position.setZ(30)
-
     renderer.render(scene, camera)
 
     // add donut
@@ -55,9 +49,6 @@ export default Vue.extend({
     addPointLight({ scene, options: { position: [10, 10, 10] } })
     addPointLight({ scene, options: { position: [-10, -10, -10] } })
     addAmbientLight({ scene })
-
-    // add orbit controls
-    const orbitControls = new OrbitControls(camera, renderer.domElement)
 
     // add background image
     addSpaceBackground(scene)
@@ -80,7 +71,18 @@ export default Vue.extend({
     const [sun] = addSun(scene)
 
     // add star destroyer
-    await addStarDestroyer(scene)
+    const [starDestroyer] = await addStarDestroyer(scene)
+
+    // Add lookAt starDestroyer
+    // TODO: explain what is a quaternion in Wiki
+    camera.position.setX(starDestroyer.scene.position.x)
+    camera.position.setY(starDestroyer.scene.position.y + 1)
+    camera.position.setZ(starDestroyer.scene.position.z - 5)
+
+    const idealLookat = new THREE.Vector3(0, 0, 0)
+    idealLookat.applyQuaternion(starDestroyer.scene.quaternion)
+    idealLookat.add(starDestroyer.scene.position)
+    camera.lookAt(idealLookat)
 
     function animate() {
       requestAnimationFrame(animate)
@@ -100,8 +102,6 @@ export default Vue.extend({
         asteroid.rotation.y += 0.005
         asteroid.rotation.z += 0.005
       }
-
-      orbitControls.update()
 
       // update the picking ray with the camera and pointer position
       raycaster.setFromCamera(pointer, camera)

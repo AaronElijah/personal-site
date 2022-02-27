@@ -15,6 +15,11 @@ export default {
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
 
+  // The env property defines environment variables that should be available on the client side: https://nuxtjs.org/docs/configuration-glossary/configuration-env
+  env: {
+    routerBase: process.env.NODE_ENV === 'production' ? '/personal-site/' : '/',
+  },
+
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
     // CSS file in the project
@@ -73,7 +78,7 @@ export default {
   target: 'static', // default is 'server'
 
   router: {
-    base: '/personal-site/',
+    base: process.env.NODE_ENV === 'production' ? '/personal-site/' : '/',
   },
 
   // Font Awesome configuration
