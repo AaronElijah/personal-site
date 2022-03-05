@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import { clientSideOnly, StaticImages } from '~/lib/utils'
 
 export const addSpaceBackground = clientSideOnly(
-  (scene: THREE.Scene): [THREE.Scene] => {
-    const galaxyTexture = new THREE.TextureLoader().load(
+  async (scene: THREE.Scene): Promise<[THREE.Scene]> => {
+    const galaxyTexture = await new THREE.TextureLoader().loadAsync(
       StaticImages.interstellarSpace
     )
     scene.background = galaxyTexture

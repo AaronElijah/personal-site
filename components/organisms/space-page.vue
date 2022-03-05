@@ -4,45 +4,37 @@
 <script lang="ts">
 import * as THREE from 'three'
 
+// Uncomment if you need camera controls from the mouse
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Vue from 'vue'
 import { addSpaceBackground } from '~/lib/space/background'
 import {
   addProfileBox,
   addDonut,
-  addMars,
-  addJupiter,
-  addNeptune,
-  addSun,
+  addLargeBody,
   addAsteroid,
 } from '~/lib/space/shapes'
 import { addStarDestroyer } from '~/lib/space/spaceships'
 import { addPointLight, addAmbientLight } from '~/lib/space/lighting'
-import { addPerspectiveCamera } from '~/lib/space/camera'
+import { addThirdPersonCamera } from '~/lib/space/camera'
+import { ControllableObject } from '~/lib/controllable'
+import { flightControls } from '~/lib/flightControls'
 
 export default Vue.extend({
   name: 'SpacePage',
   async mounted() {
     const scene = new THREE.Scene()
 
-    const camera = addPerspectiveCamera()
-
     // renderer renders out the actual grapics
     const renderer = new THREE.WebGLRenderer({
       canvas: document.querySelector('#space-bg') as HTMLCanvasElement,
     })
-
-    // raycaster assists in figuring out what is between the camera focal point and the mouse
-    const raycaster = new THREE.Raycaster()
-
     // Set the renderer to render the image to full screen size
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
 
-    renderer.render(scene, camera)
-
     // add donut
-    const [torus] = addDonut(scene)
+    const [torus] = await addDonut(scene)
 
     // add light sources
     // const ambientLight = new THREE.AmbientLight(0x404040, 5);
@@ -51,7 +43,7 @@ export default Vue.extend({
     addAmbientLight({ scene })
 
     // add background image
-    addSpaceBackground(scene)
+    await addSpaceBackground(scene)
 
     // add asteroids
     const asteroids: THREE.Mesh<
@@ -59,33 +51,73 @@ export default Vue.extend({
       THREE.MeshStandardMaterial
     >[] = []
     const numAsteroids = 10
-    for (let i = 0; i < numAsteroids; i++) asteroids.push(addAsteroid(scene)[0])
+    for (let i = 0; i < numAsteroids; i++)
+      asteroids.push((await addAsteroid(scene))[0])
 
     // add aaron
-    addProfileBox(scene)
+    await addProfileBox(scene)
 
-    // add planets/large objects
-    const [mars] = addMars(scene)
-    const [jupiter] = addJupiter(scene)
-    const [neptune] = addNeptune(scene)
-    const [sun] = addSun(scene)
+    // add large spacial objects
+    const [mars] = await addLargeBody({
+      scene,
+      largeBody: 'mars',
+      options: { position: [-20, 0, 50] },
+    })
+    const [jupiter] = await addLargeBody({
+      scene,
+      largeBody: 'jupiter',
+      options: { position: [50, 0, 70] },
+    })
+    const [neptune] = await addLargeBody({
+      scene,
+      largeBody: 'neptune',
+      options: { position: [30, 0, -40] },
+    })
+    const [sun] = await addLargeBody({
+      scene,
+      largeBody: 'sun',
+      options: { position: [-60, 0, -70] },
+    })
 
     // add star destroyer
     const [starDestroyer] = await addStarDestroyer(scene)
 
-    // Add lookAt starDestroyer
-    // TODO: explain what is a quaternion in Wiki
-    camera.position.setX(starDestroyer.scene.position.x)
-    camera.position.setY(starDestroyer.scene.position.y + 1)
-    camera.position.setZ(starDestroyer.scene.position.z - 5)
+    const [, starDestroyerCamera] = addThirdPersonCamera({
+      subject: starDestroyer.scene,
+      options: {
+        offset: new THREE.Vector3(0.0, 2.5, -5.5),
+        idealLookat: new THREE.Vector3(0, 0, 5),
+      },
+    })
 
-    const idealLookat = new THREE.Vector3(0, 0, 0)
-    idealLookat.applyQuaternion(starDestroyer.scene.quaternion)
-    idealLookat.add(starDestroyer.scene.position)
-    camera.lookAt(idealLookat)
+    const controllableShip = new ControllableObject(
+      starDestroyer.scene,
+      // set actions for each control applied
+      flightControls
+    )
+
+    const pointer = new THREE.Vector2()
+
+    window.addEventListener('pointermove', (event) => {
+      // calculate pointer position in normalized device coordinates
+      // (-1 to +1) for both components
+      pointer.x = (event.clientX / window.innerWidth) * 2 - 1
+      pointer.y = -(event.clientY / window.innerHeight) * 2 + 1
+    })
+
+    window.addEventListener('keydown', (e) => {
+      controllableShip.toggleControl(e.key, true)
+    })
+    window.addEventListener('keyup', (e) => {
+      controllableShip.toggleControl(e.key, false)
+    })
+
+    renderer.render(scene, starDestroyerCamera)
 
     function animate() {
       requestAnimationFrame(animate)
+
+      controllableShip.update()
 
       torus.rotation.x += 0.0001
       torus.rotation.y += 0.0005
@@ -103,23 +135,18 @@ export default Vue.extend({
         asteroid.rotation.z += 0.005
       }
 
-      // update the picking ray with the camera and pointer position
-      raycaster.setFromCamera(pointer, camera)
+      // raycaster assists in figuring out what is between the camera focal point and the mouse
+      const raycaster = new THREE.Raycaster()
 
+      // update the picking ray with the camera and pointer position
+      raycaster.setFromCamera(pointer, starDestroyerCamera)
       // calculate objects intersecting the picking ray
       // const intersects = raycaster.intersectObjects(scene.children)
       // console.log(intersects)
 
-      renderer.render(scene, camera)
+      renderer.render(scene, starDestroyerCamera)
     }
 
-    const pointer = new THREE.Vector2()
-    window.addEventListener('pointermove', (event) => {
-      // calculate pointer position in normalized device coordinates
-      // (-1 to +1) for both components
-      pointer.x = (event.clientX / window.innerWidth) * 2 - 1
-      pointer.y = -(event.clientY / window.innerHeight) * 2 + 1
-    })
     animate()
   },
 })
