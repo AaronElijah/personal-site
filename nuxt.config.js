@@ -17,7 +17,8 @@ export default {
 
   // The env property defines environment variables that should be available on the client side: https://nuxtjs.org/docs/configuration-glossary/configuration-env
   env: {
-    routerBase: process.env.NODE_ENV === 'production' ? '/personal-site/' : '/',
+    routerBase:
+      process.env.NODE_ENV === 'production' ? '/personal-site/' : '/123',
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
