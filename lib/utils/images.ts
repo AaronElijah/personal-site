@@ -1,3 +1,7 @@
+const imagesDir = `${
+  process.env.NODE_ENV === 'production' ? '/personal-site/' : '/'
+}images`
+
 const basecolor = 'basecolor.jpg'
 const ambientOcclusion = 'ambientOcclusion.jpg'
 const roughness = 'roughness.jpg'
@@ -5,7 +9,6 @@ const displacement = 'height.png'
 const normal = 'normal.jpg'
 const metal = 'metallic.jpg'
 
-const imagesDir = '/images'
 const crystalMetal = 'crystal_metal'
 const damascusSteel = 'damascus_steel'
 const greenCrystal = 'green_crystal'

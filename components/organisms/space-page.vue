@@ -14,7 +14,10 @@ import {
   addLargeBody,
   addAsteroid,
 } from '~/lib/space/shapes'
-import { addStarDestroyer } from '~/lib/space/spaceships'
+import {
+  addApolloCommandModule,
+  addStarDestroyer,
+} from '~/lib/space/spaceships'
 import { addPointLight, addAmbientLight } from '~/lib/space/lighting'
 import { addThirdPersonCamera } from '~/lib/space/camera'
 import { ControllableObject } from '~/lib/controllable'
@@ -80,7 +83,10 @@ export default Vue.extend({
     })
 
     // add star destroyer
-    const [starDestroyer] = await addStarDestroyer(scene)
+    const [starDestroyer] = await addStarDestroyer({
+      scene,
+      options: { position: [5, 5, 0] },
+    })
 
     const [, starDestroyerCamera] = addThirdPersonCamera({
       subject: starDestroyer.scene,
@@ -96,20 +102,13 @@ export default Vue.extend({
       flightControls
     )
 
-    const pointer = new THREE.Vector2()
-
-    window.addEventListener('pointermove', (event) => {
-      // calculate pointer position in normalized device coordinates
-      // (-1 to +1) for both components
-      pointer.x = (event.clientX / window.innerWidth) * 2 - 1
-      pointer.y = -(event.clientY / window.innerHeight) * 2 + 1
-    })
-
-    window.addEventListener('keydown', (e) => {
-      controllableShip.toggleControl(e.key, true)
-    })
-    window.addEventListener('keyup', (e) => {
-      controllableShip.toggleControl(e.key, false)
+    // Add apollo command module
+    await addApolloCommandModule({
+      scene,
+      options: {
+        position: [100, 0, 100],
+        scale: [0.01, 0.01, 0.01],
+      },
     })
 
     renderer.render(scene, starDestroyerCamera)
@@ -135,17 +134,38 @@ export default Vue.extend({
         asteroid.rotation.z += 0.005
       }
 
-      // raycaster assists in figuring out what is between the camera focal point and the mouse
-      const raycaster = new THREE.Raycaster()
+      renderer.render(scene, starDestroyerCamera)
+    }
+
+    // pointer position of the normalized device coordinates
+    const pointer = new THREE.Vector2()
+    // raycaster assists in figuring out what is between the camera focal point and the mouse
+    const raycaster = new THREE.Raycaster()
+
+    // Event listeners
+    window.addEventListener('pointermove', (event) => {
+      // calculate pointer position in normalized device coordinates
+      // (-1 to +1) for both components
+      pointer.x = (event.clientX / window.innerWidth) * 2 - 1
+      pointer.y = -(event.clientY / window.innerHeight) * 2 + 1
 
       // update the picking ray with the camera and pointer position
       raycaster.setFromCamera(pointer, starDestroyerCamera)
+    })
+    window.addEventListener('keydown', (e) => {
+      controllableShip.toggleControl(e.key, true)
+    })
+    window.addEventListener('keyup', (e) => {
+      controllableShip.toggleControl(e.key, false)
+    })
+    window.addEventListener('click', () => {
       // calculate objects intersecting the picking ray
-      // const intersects = raycaster.intersectObjects(scene.children)
-      // console.log(intersects)
-
-      renderer.render(scene, starDestroyerCamera)
-    }
+      const intersects = raycaster.intersectObjects(scene.children)
+      if (intersects.length > 0) {
+        // if there is an intersection, log them
+        console.log(intersects)
+      }
+    })
 
     animate()
   },
