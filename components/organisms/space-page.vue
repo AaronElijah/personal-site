@@ -1,13 +1,18 @@
 <template>
-  <canvas id="space-bg" class="fixed w-full h-full"></canvas>
+  <div class="fixed w-full h-full">
+    <canvas id="space-bg"></canvas>
+    <!-- <div
+      id="space-info"
+      class="absolute w-1/3 h-1/2 z-10 left-1/2 top-1/4 bg-red-500"
+    /> -->
+  </div>
 </template>
 <script lang="ts">
 import * as THREE from 'three'
-
 // Uncomment if you need camera controls from the mouse
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Vue from 'vue'
-import { addSpaceBackground } from '~/lib/space/background'
+import { addNebulaBackground } from '~/lib/space/background'
 import {
   addProfileBox,
   addDonut,
@@ -19,9 +24,10 @@ import {
   addStarDestroyer,
 } from '~/lib/space/spaceships'
 import { addPointLight, addAmbientLight } from '~/lib/space/lighting'
-import { addThirdPersonCamera } from '~/lib/space/camera'
-import { ControllableObject } from '~/lib/controllable'
+import { addPerspectiveCamera, ThirdPersonCamera } from '~/lib/camera'
+import { Controllable } from '~/lib/controllable'
 import { flightControls } from '~/lib/flightControls'
+import { Animatable } from '~/lib/animatable'
 
 export default Vue.extend({
   name: 'SpacePage',
@@ -40,13 +46,13 @@ export default Vue.extend({
     const [torus] = await addDonut(scene)
 
     // add light sources
-    // const ambientLight = new THREE.AmbientLight(0x404040, 5);
     addPointLight({ scene, options: { position: [10, 10, 10] } })
     addPointLight({ scene, options: { position: [-10, -10, -10] } })
     addAmbientLight({ scene })
 
     // add background image
-    await addSpaceBackground(scene)
+    // await addSpaceBackground(scene)
+    await addNebulaBackground(scene)
 
     // add asteroids
     const asteroids: THREE.Mesh<
@@ -88,58 +94,38 @@ export default Vue.extend({
       options: { position: [5, 5, 0] },
     })
 
-    const [, starDestroyerCamera] = addThirdPersonCamera({
-      subject: starDestroyer.scene,
-      options: {
-        offset: new THREE.Vector3(0.0, 2.5, -5.5),
-        idealLookat: new THREE.Vector3(0, 0, 5),
-      },
-    })
-
-    const controllableShip = new ControllableObject(
-      starDestroyer.scene,
-      // set actions for each control applied
-      flightControls
-    )
-
     // Add apollo command module
-    await addApolloCommandModule({
+    const [module] = await addApolloCommandModule({
       scene,
       options: {
-        position: [100, 0, 100],
+        position: [-50, 50, 50],
         scale: [0.01, 0.01, 0.01],
       },
     })
+    // TODO: fix that it doesn't apepar to be updating the animation
+    const commandModule = new Animatable(module.scene, (m) => {
+      m.position.x += 0.0005
+    })
 
-    renderer.render(scene, starDestroyerCamera)
+    // create initial camera
+    const camera = addPerspectiveCamera()
+    const thirdPersonCamera = new ThirdPersonCamera({
+      camera,
+      position: new THREE.Vector3(0, 0, 0),
+      quaternion: new THREE.Quaternion(),
+      defaultOffset: new THREE.Vector3(0, 3, -7.5),
+      defaultLookat: new THREE.Vector3(0, 0, 10),
+    })
 
-    function animate() {
-      requestAnimationFrame(animate)
+    const ship = new Controllable(starDestroyer.scene, flightControls, [
+      { id: 'camera', action: thirdPersonCamera.observerTarget },
+    ])
 
-      controllableShip.update()
-
-      torus.rotation.x += 0.0001
-      torus.rotation.y += 0.0005
-      torus.rotation.z += 0.0001
-
-      mars.rotation.y += 0.01
-      neptune.rotation.y -= 0.01
-      jupiter.rotation.y -= 0.005
-      sun.rotation.y += 0.001
-
-      for (let i = 0; i < asteroids.length; i++) {
-        const asteroid = asteroids[i]
-        asteroid.rotation.x += 0.005
-        asteroid.rotation.y += 0.005
-        asteroid.rotation.z += 0.005
-      }
-
-      renderer.render(scene, starDestroyerCamera)
-    }
+    renderer.render(scene, thirdPersonCamera.camera)
 
     // pointer position of the normalized device coordinates
-    const pointer = new THREE.Vector2()
     // raycaster assists in figuring out what is between the camera focal point and the mouse
+    const pointer = new THREE.Vector2()
     const raycaster = new THREE.Raycaster()
 
     // Event listeners
@@ -150,22 +136,56 @@ export default Vue.extend({
       pointer.y = -(event.clientY / window.innerHeight) * 2 + 1
 
       // update the picking ray with the camera and pointer position
-      raycaster.setFromCamera(pointer, starDestroyerCamera)
+      raycaster.setFromCamera(pointer, thirdPersonCamera.camera)
     })
     window.addEventListener('keydown', (e) => {
-      controllableShip.toggleControl(e.key, true)
+      ship.toggleControl(e.key, true)
     })
     window.addEventListener('keyup', (e) => {
-      controllableShip.toggleControl(e.key, false)
+      ship.toggleControl(e.key, false)
     })
     window.addEventListener('click', () => {
       // calculate objects intersecting the picking ray
-      const intersects = raycaster.intersectObjects(scene.children)
+      const intersects = raycaster.intersectObjects(
+        commandModule.scene.children
+      )
+
+      // Clicked the command module
       if (intersects.length > 0) {
-        // if there is an intersection, log them
-        console.log(intersects)
+        // call ThirdPersonCamera register new subject
+        ship.removeObserver('camera')
+        commandModule.addObserver({
+          id: 'camera',
+          action: thirdPersonCamera.observerTarget,
+        })
       }
     })
+
+    function animate() {
+      requestAnimationFrame(animate)
+
+      ship.update()
+      thirdPersonCamera.update()
+      commandModule.update()
+
+      torus.rotation.x += 0.0001
+      torus.rotation.y += 0.0005
+      torus.rotation.z += 0.0001
+
+      mars.rotation.y += 0.001
+      neptune.rotation.y -= 0.001
+      jupiter.rotation.y -= 0.0005
+      sun.rotation.y += 0.0001
+
+      for (let i = 0; i < asteroids.length; i++) {
+        const asteroid = asteroids[i]
+        asteroid.rotation.x += 0.005
+        asteroid.rotation.y += 0.005
+        asteroid.rotation.z += 0.005
+      }
+
+      renderer.render(scene, camera)
+    }
 
     animate()
   },

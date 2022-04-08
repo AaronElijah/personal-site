@@ -65,25 +65,25 @@ const flightControls: Map<FlightKeyControls, (ship: THREE.Object3D) => void> =
     [
       'w',
       (ship: THREE.Object3D) => {
-        ship.translateZ(0.5)
+        ship.translateZ(0.25)
       },
     ],
     [
       's',
       (ship: THREE.Object3D) => {
-        ship.translateZ(-0.5)
+        ship.translateZ(-0.25)
       },
     ],
     [
       'a',
       (ship: THREE.Object3D) => {
-        ship.translateX(0.5)
+        ship.translateX(0.25)
       },
     ],
     [
       'd',
       (ship: THREE.Object3D) => {
-        ship.translateX(-0.5)
+        ship.translateX(-0.25)
       },
     ],
   ])
