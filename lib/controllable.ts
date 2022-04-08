@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { Observable } from '~/lib/observable'
 
 // TODO: give this a better name
 type KeyAction = (controlledObject: THREE.Object3D) => void
@@ -15,7 +16,7 @@ type KeyControlState = { isToggled: boolean; action: KeyAction }
  * It has state that details what keys have been toggled on the spaceship.
  * It exposes an update function to be called on every render that will use the current state to update the controlled object with the actions given.
  */
-export class Controllable {
+export class Controllable implements Observable {
   private object: THREE.Object3D
   private controlStates: Map<string, KeyControlState>
   private observerActions: Array<ObserverAction> = []
@@ -45,6 +46,10 @@ export class Controllable {
       ...curControlState,
       isToggled: state ?? !curControlState.isToggled,
     })
+  }
+
+  addObserver(observerAction: ObserverAction) {
+    this.observerActions.push(observerAction)
   }
 
   removeObserver(observerId: string) {

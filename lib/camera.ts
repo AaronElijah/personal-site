@@ -58,8 +58,8 @@ function addOrbitControls(camera: THREE.Camera, renderer: THREE.Renderer) {
 
 class ThirdPersonCamera {
   public camera: THREE.PerspectiveCamera
-  private targetPosition: THREE.Vector3
-  private targetQuaternion: THREE.Quaternion = new THREE.Quaternion()
+  private targetPosition: THREE.Vector3 // position of the target of the camera
+  private targetQuaternion: THREE.Quaternion = new THREE.Quaternion() // quaternion of the target of the camera
   private defaultOffset: THREE.Vector3
   private defaultLookat: THREE.Vector3
   private lerpAlpha: number
@@ -82,7 +82,7 @@ class ThirdPersonCamera {
     this.targetQuaternion = quaternion.clone()
   }
 
-  observerTarget = (target: THREE.Object3D) => {
+  onTargetUpdate = (target: THREE.Object3D) => {
     if (!this.targetPosition.equals(target.position))
       this.targetPosition = target.position.clone()
     if (!this.targetQuaternion.equals(target.quaternion))
@@ -109,10 +109,23 @@ class ThirdPersonCamera {
     const newOffset = this.calculateIdealOffset()
     const newLookat = this.calculateIdealLookat()
     this.camera.position.lerp(newOffset, this.lerpAlpha)
-    this.camera.lookAt(newLookat) // may need to change this to rotate to lookAt
+
+    // slerp to new lookat
+    const newQuaternion = (() => {
+      const clone = this.camera.clone()
+      clone.lookAt(newLookat)
+      return clone.quaternion
+    })()
+    this.camera.quaternion.slerp(newQuaternion, 0.1)
   }
 
-  changeDefaults(defaultLookat: THREE.Vector3, defaultOffset: THREE.Vector3) {
+  changeDefaults({
+    defaultLookat,
+    defaultOffset,
+  }: {
+    defaultLookat?: THREE.Vector3
+    defaultOffset?: THREE.Vector3
+  }) {
     if (defaultLookat) this.defaultLookat = defaultLookat
     if (defaultOffset) this.defaultOffset = defaultOffset
   }

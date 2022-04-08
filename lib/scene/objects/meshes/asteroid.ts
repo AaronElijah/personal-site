@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { StaticImages } from '~/lib/utils'
+import { clientSideOnly, randomBetween, StaticImages } from '~/lib/utils'
 
 export async function randomAsteroidMaterial() {
   const loader = new THREE.TextureLoader()
@@ -48,3 +48,46 @@ export async function randomAsteroidMaterial() {
 
   return new THREE.MeshStandardMaterial(maps)
 }
+
+// Coordinates of the 8 vertices of a cube object in normal space
+// 24 elements in array = 8 vertices * 3 dimensional normal space
+const verticesOfCube: readonly number[] = [
+  -1, -1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1,
+  1, 1,
+]
+
+const indicesOfFaces: number[] = [
+  2, 1, 0, 0, 3, 2, 0, 4, 7, 7, 3, 0, 0, 1, 5, 5, 4, 0, 1, 2, 6, 6, 5, 1, 2, 3,
+  7, 7, 6, 2, 4, 5, 6, 6, 7, 4,
+]
+
+export const randomAsteroidGeometry = clientSideOnly(() => {
+  const scale = randomBetween(0.9, 1)
+  const scaledVertices = verticesOfCube.map((vert) => scale * vert)
+  const randomVertices = scaledVertices.map(
+    (coord) => coord * (1 + (2 * Math.random() - 1))
+  )
+  return new THREE.PolyhedronGeometry(randomVertices, indicesOfFaces, 1, 2)
+})
+
+export const addAsteroid = clientSideOnly(
+  async (
+    scene: THREE.Scene
+  ): Promise<
+    [
+      THREE.Mesh<THREE.PolyhedronGeometry, THREE.MeshStandardMaterial>,
+      THREE.Scene
+    ]
+  > => {
+    const geometry = randomAsteroidGeometry()
+    const material = await randomAsteroidMaterial()
+    const asteroid = new THREE.Mesh(geometry, material)
+    const [x, y, z] = Array(3)
+      .fill(0)
+      .map(() => THREE.MathUtils.randFloatSpread(100))
+    asteroid.position.set(x, y, z)
+
+    scene.add(asteroid)
+    return [asteroid, scene]
+  }
+)

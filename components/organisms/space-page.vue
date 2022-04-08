@@ -12,22 +12,30 @@ import * as THREE from 'three'
 // Uncomment if you need camera controls from the mouse
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Vue from 'vue'
-import { addNebulaBackground } from '~/lib/space/background'
+import { addNebulaBackground } from '~/lib/scene/background'
 import {
   addProfileBox,
   addDonut,
   addLargeBody,
-  addAsteroid,
-} from '~/lib/space/shapes'
+} from '~/lib/scene/objects/meshes/other'
+import { addAsteroid } from '~/lib/scene/objects/meshes/asteroid'
 import {
   addApolloCommandModule,
   addStarDestroyer,
-} from '~/lib/space/spaceships'
-import { addPointLight, addAmbientLight } from '~/lib/space/lighting'
+} from '~/lib/scene/objects/models'
+import { addPointLight, addAmbientLight } from '~/lib/scene/lighting'
 import { addPerspectiveCamera, ThirdPersonCamera } from '~/lib/camera'
 import { Controllable } from '~/lib/controllable'
-import { flightControls } from '~/lib/flightControls'
+import { flightControls } from '~/lib/utils/flightControls'
 import { Animatable } from '~/lib/animatable'
+
+enum States {
+  travel = 'travel',
+  reading = 'reading',
+}
+enum Transitions {
+  click = 'click',
+}
 
 export default Vue.extend({
   name: 'SpacePage',
@@ -38,12 +46,8 @@ export default Vue.extend({
     const renderer = new THREE.WebGLRenderer({
       canvas: document.querySelector('#space-bg') as HTMLCanvasElement,
     })
-    // Set the renderer to render the image to full screen size
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
-
-    // add donut
-    const [torus] = await addDonut(scene)
 
     // add light sources
     addPointLight({ scene, options: { position: [10, 10, 10] } })
@@ -53,6 +57,14 @@ export default Vue.extend({
     // add background image
     // await addSpaceBackground(scene)
     await addNebulaBackground(scene)
+
+    // add donut
+    const [torusMesh] = await addDonut(scene)
+    const torus = new Animatable(torusMesh, (torus) => {
+      torus.rotation.x += 0.0001
+      torus.rotation.y += 0.0005
+      torus.rotation.z += 0.0001
+    })
 
     // add asteroids
     const asteroids: THREE.Mesh<
@@ -66,7 +78,7 @@ export default Vue.extend({
     // add aaron
     await addProfileBox(scene)
 
-    // add large spacial objects
+    // add large objects
     const [mars] = await addLargeBody({
       scene,
       largeBody: 'mars',
@@ -102,9 +114,9 @@ export default Vue.extend({
         scale: [0.01, 0.01, 0.01],
       },
     })
-    // TODO: fix that it doesn't apepar to be updating the animation
+
     const commandModule = new Animatable(module.scene, (m) => {
-      m.position.x += 0.0005
+      m.rotation.y += 0.005
     })
 
     // create initial camera
@@ -118,7 +130,7 @@ export default Vue.extend({
     })
 
     const ship = new Controllable(starDestroyer.scene, flightControls, [
-      { id: 'camera', action: thirdPersonCamera.observerTarget },
+      { id: 'camera', action: thirdPersonCamera.onTargetUpdate },
     ])
 
     renderer.render(scene, thirdPersonCamera.camera)
@@ -128,7 +140,18 @@ export default Vue.extend({
     const pointer = new THREE.Vector2()
     const raycaster = new THREE.Raycaster()
 
-    // Event listeners
+    // It's good to have a state machine but ideally we want to store data about the state we are in
+    // How can we do this? Maybe each state is more than just a string literal
+    let state: States = States.travel
+    const stateTransitions: { [key in States]: { click: States } } = {
+      [States.travel]: {
+        [Transitions.click]: States.reading,
+      },
+      [States.reading]: {
+        [Transitions.click]: States.travel,
+      },
+    }
+
     window.addEventListener('pointermove', (event) => {
       // calculate pointer position in normalized device coordinates
       // (-1 to +1) for both components
@@ -146,18 +169,38 @@ export default Vue.extend({
     })
     window.addEventListener('click', () => {
       // calculate objects intersecting the picking ray
-      const intersects = raycaster.intersectObjects(
+      const commandModuleIntersections = raycaster.intersectObjects(
         commandModule.scene.children
       )
 
       // Clicked the command module
-      if (intersects.length > 0) {
+      if (!!commandModuleIntersections.length && state === States.travel) {
         // call ThirdPersonCamera register new subject
         ship.removeObserver('camera')
         commandModule.addObserver({
           id: 'camera',
-          action: thirdPersonCamera.observerTarget,
+          action: thirdPersonCamera.onTargetUpdate,
         })
+        thirdPersonCamera.changeDefaults({
+          defaultLookat: new THREE.Vector3(-5, 0, 0),
+          defaultOffset: new THREE.Vector3(0, 0, 10),
+        })
+        state = stateTransitions[state].click
+      } else if (
+        !commandModuleIntersections.length &&
+        state === States.reading
+      ) {
+        // call ThirdPersonCamera register new subject
+        commandModule.removeObserver('camera')
+        ship.addObserver({
+          id: 'camera',
+          action: thirdPersonCamera.onTargetUpdate,
+        })
+        thirdPersonCamera.changeDefaults({
+          defaultLookat: new THREE.Vector3(0, 0, 10),
+          defaultOffset: new THREE.Vector3(0, 3, -7.5),
+        })
+        state = stateTransitions[state].click
       }
     })
 
@@ -168,9 +211,7 @@ export default Vue.extend({
       thirdPersonCamera.update()
       commandModule.update()
 
-      torus.rotation.x += 0.0001
-      torus.rotation.y += 0.0005
-      torus.rotation.z += 0.0001
+      torus.update()
 
       mars.rotation.y += 0.001
       neptune.rotation.y -= 0.001

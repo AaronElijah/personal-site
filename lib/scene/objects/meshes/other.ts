@@ -1,7 +1,5 @@
 import * as THREE from 'three'
 import { clientSideOnly, StaticImages } from '~/lib/utils'
-import { randomAsteroidMaterial } from '~/lib/space/texture'
-import { randomGeometry } from '~/lib/space/geometry'
 
 interface IAddLargeBody {
   scene: THREE.Scene
@@ -106,28 +104,6 @@ export const addLargeBody = clientSideOnly(
     mesh.position.set(...position)
     scene.add(mesh)
     return [mesh, scene]
-  }
-)
-
-export const addAsteroid = clientSideOnly(
-  async (
-    scene: THREE.Scene
-  ): Promise<
-    [
-      THREE.Mesh<THREE.PolyhedronGeometry, THREE.MeshStandardMaterial>,
-      THREE.Scene
-    ]
-  > => {
-    const geometry = randomGeometry()
-    const material = await randomAsteroidMaterial()
-    const asteroid = new THREE.Mesh(geometry, material)
-    const [x, y, z] = Array(3)
-      .fill(0)
-      .map(() => THREE.MathUtils.randFloatSpread(100))
-    asteroid.position.set(x, y, z)
-
-    scene.add(asteroid)
-    return [asteroid, scene]
   }
 )
 

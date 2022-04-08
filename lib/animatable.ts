@@ -1,17 +1,10 @@
 import * as THREE from 'three'
+import { Observable, ObserverAction } from '~/lib/observable'
 
-// TODO: give this a better name
-type KeyAction = (controlledObject: THREE.Object3D) => void
-
-type ObserverAction = {
-  id: string
-  action: KeyAction
-}
-
-export class Animatable {
+export class Animatable implements Observable {
   public scene: THREE.Object3D
   private handleUpdate: (object: THREE.Object3D) => void
-  private observerActions: Array<ObserverAction>
+  private observers: Array<ObserverAction> = []
 
   constructor(
     scene: THREE.Object3D,
@@ -20,16 +13,23 @@ export class Animatable {
   ) {
     this.scene = scene
     this.handleUpdate = handleUpdate
-    this.observerActions = observerActions || []
+    if (observerActions) this.observers = observerActions
   }
 
   addObserver(observerAction: ObserverAction) {
-    this.observerActions.push(observerAction)
+    this.observers.push(observerAction)
+  }
+
+  removeObserver(observerId: string) {
+    if (this.observers)
+      this.observers = this.observers.filter(
+        (action) => action.id !== observerId
+      )
   }
 
   update() {
     this.handleUpdate(this.scene)
-    this.observerActions.forEach(({ action }) => {
+    this.observers.forEach(({ action }) => {
       action(this.scene)
     })
   }
