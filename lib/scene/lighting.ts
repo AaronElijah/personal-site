@@ -11,7 +11,9 @@ interface IAddPointLight {
 
 interface IAddAmbientLight {
   scene: THREE.Scene
-  color?: number
+  options?: {
+    color?: number
+  }
 }
 
 export const addPointLight = clientSideOnly(
@@ -35,7 +37,7 @@ export const addPointLight = clientSideOnly(
 export const addAmbientLight = clientSideOnly(
   ({
     scene,
-    color = 0xf7efc5,
+    options: { color = 0xf7efc5 } = {},
   }: IAddAmbientLight): [THREE.Scene, THREE.AmbientLight] => {
     const light = new THREE.AmbientLight(color, 0.25)
     scene.add(light)
