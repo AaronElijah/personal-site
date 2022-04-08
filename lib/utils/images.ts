@@ -25,6 +25,7 @@ export const StaticImages = {
     normal: `${imagesDir}/12k_mars_normal.jpg`,
   },
   interstellarSpace: `${imagesDir}/large_space.jpg`,
+  nebulaSpace: `${imagesDir}/equirectangular_space.jpeg`,
   crystalMetal: {
     basecolor: `${imagesDir}/${crystalMetal}/${basecolor}`,
     ao: `${imagesDir}/${crystalMetal}/${ambientOcclusion}`,
