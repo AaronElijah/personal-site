@@ -1,17 +1,23 @@
 <template>
   <div class="fixed w-full h-full">
     <canvas id="space-bg"></canvas>
-    <!-- <div
+    <div
+      v-if="page"
       id="space-info"
-      class="absolute w-1/3 h-1/2 z-10 left-1/2 top-1/4 bg-red-500"
-    /> -->
+      class="absolute w-1/3 h-1/2 z-10 left-[20%] top-1/4 bg-red-500 rounded-sm animated-fade-in"
+    >
+      <h1>{{ page.title }}</h1>
+      <body>
+        {{ page.description }}
+      </body>
+    </div>
   </div>
 </template>
 <script lang="ts">
+import { FetchReturn } from '@nuxt/content/types/query-builder'
 import * as THREE from 'three'
-// Uncomment if you need camera controls from the mouse
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Vue from 'vue'
+
 import { addNebulaBackground } from '~/lib/scene/background'
 import {
   addProfileBox,
@@ -37,28 +43,47 @@ enum Transitions {
   click = 'click',
 }
 
+// TODO: only want modal to appear for the command module when it is clicked on
+interface ISpacePageData {
+  page: null | FetchReturn
+  focusedObject: null | 'commandModule'
+}
+
 export default Vue.extend({
   name: 'SpacePage',
+  data: () => {
+    const data: ISpacePageData = {
+      page: null,
+      focusedObject: null,
+    }
+    return data
+  },
+  watch: {
+    async focusedObject() {
+      if (this.focusedObject === 'commandModule') {
+        this.page = (await this.$content(
+          'apollo-command-module'
+        ).fetch()) as FetchReturn
+      } else {
+        this.page = null
+      }
+    },
+  },
   async mounted() {
     const scene = new THREE.Scene()
 
-    // renderer renders out the actual grapics
     const renderer = new THREE.WebGLRenderer({
       canvas: document.querySelector('#space-bg') as HTMLCanvasElement,
     })
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
 
-    // add light sources
     addPointLight({ scene, options: { position: [10, 10, 10] } })
     addPointLight({ scene, options: { position: [-10, -10, -10] } })
     addAmbientLight({ scene })
 
-    // add background image
-    // await addSpaceBackground(scene)
     await addNebulaBackground(scene)
 
-    // add donut
     const [torusMesh] = await addDonut(scene)
     const torus = new Animatable(torusMesh, (torus) => {
       torus.rotation.x += 0.0001
@@ -66,7 +91,6 @@ export default Vue.extend({
       torus.rotation.z += 0.0001
     })
 
-    // add asteroids
     const asteroids: THREE.Mesh<
       THREE.PolyhedronGeometry,
       THREE.MeshStandardMaterial
@@ -75,10 +99,7 @@ export default Vue.extend({
     for (let i = 0; i < numAsteroids; i++)
       asteroids.push((await addAsteroid(scene))[0])
 
-    // add aaron
     await addProfileBox(scene)
-
-    // add large objects
     const [mars] = await addLargeBody({
       scene,
       largeBody: 'mars',
@@ -185,6 +206,7 @@ export default Vue.extend({
           defaultLookat: new THREE.Vector3(-5, 0, 0),
           defaultOffset: new THREE.Vector3(0, 0, 10),
         })
+        this.$data.focusedObject = 'commandModule'
         state = stateTransitions[state].click
       } else if (
         !commandModuleIntersections.length &&
@@ -200,6 +222,7 @@ export default Vue.extend({
           defaultLookat: new THREE.Vector3(0, 0, 10),
           defaultOffset: new THREE.Vector3(0, 3, -7.5),
         })
+        this.$data.focusedObject = null
         state = stateTransitions[state].click
       }
     })
@@ -232,3 +255,19 @@ export default Vue.extend({
   },
 })
 </script>
+<style lang="postcss" scoped>
+.animated-fade-in {
+  animation-name: fade-in;
+  animation-duration: 0.7s;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+</style>
