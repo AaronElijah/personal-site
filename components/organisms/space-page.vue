@@ -2,12 +2,13 @@
   <div class="fixed w-full h-full">
     <canvas id="space-bg"></canvas>
     <div
-      v-if="page"
       id="space-info"
-      class="absolute w-1/3 h-1/2 z-10 left-[20%] top-1/4 bg-red-500 rounded-sm animated-fade-in"
+      :class="`absolute w-1/3 h-1/2 z-10 left-[20%] top-1/4 bg-red-500 rounded-sm transition-opacity duration-700 ease-linear ${
+        page ? 'opacity-100' : 'opacity-0'
+      } overflow-y-scroll`"
     >
-      <h1>{{ page.title }}</h1>
-      <body>
+      <h1 v-if="page">{{ page.title }}</h1>
+      <body v-if="page">
         {{ page.description }}
       </body>
     </div>
@@ -25,15 +26,13 @@ import {
   addLargeBody,
 } from '~/lib/scene/objects/meshes/other'
 import { addAsteroid } from '~/lib/scene/objects/meshes/asteroid'
-import {
-  addApolloCommandModule,
-  addStarDestroyer,
-} from '~/lib/scene/objects/models'
+import { addGLTF } from '~/lib/scene/objects/models'
 import { addPointLight, addAmbientLight } from '~/lib/scene/lighting'
 import { addPerspectiveCamera, ThirdPersonCamera } from '~/lib/camera'
 import { Controllable } from '~/lib/controllable'
 import { flightControls } from '~/lib/utils/flightControls'
 import { Animatable } from '~/lib/animatable'
+import { GLTFOptions } from '~/lib/utils/gltf'
 
 enum States {
   travel = 'travel',
@@ -43,10 +42,15 @@ enum Transitions {
   click = 'click',
 }
 
-// TODO: only want modal to appear for the command module when it is clicked on
+enum ClickableObjects {
+  commandModule = 'commandModule',
+  internationalSpaceStation = 'internationalSpaceStation',
+  jamesWebbTelescope = 'jamesWebbTelescope',
+}
+
 interface ISpacePageData {
   page: null | FetchReturn
-  focusedObject: null | 'commandModule'
+  focusedObject: null | ClickableObjects
 }
 
 export default Vue.extend({
@@ -60,9 +64,15 @@ export default Vue.extend({
   },
   watch: {
     async focusedObject() {
-      if (this.focusedObject === 'commandModule') {
+      if (this.focusedObject === ClickableObjects.commandModule) {
         this.page = (await this.$content(
-          'apollo-command-module'
+          ClickableObjects.commandModule
+        ).fetch()) as FetchReturn
+      } else if (
+        this.focusedObject === ClickableObjects.internationalSpaceStation
+      ) {
+        this.page = (await this.$content(
+          ClickableObjects.internationalSpaceStation
         ).fetch()) as FetchReturn
       } else {
         this.page = null
@@ -122,23 +132,52 @@ export default Vue.extend({
     })
 
     // add star destroyer
-    const [starDestroyer] = await addStarDestroyer({
+    const [starDestroyer] = await addGLTF({
       scene,
+      model: GLTFOptions.StarDestroyer,
       options: { position: [5, 5, 0] },
     })
 
-    // Add apollo command module
-    const [module] = await addApolloCommandModule({
+    // Add collectable space objects
+    const [commandModuleModel] = await addGLTF({
       scene,
+      model: GLTFOptions.ApolloModule,
       options: {
         position: [-50, 50, 50],
         scale: [0.01, 0.01, 0.01],
       },
     })
+    const [internationalSpaceStationModel] = await addGLTF({
+      scene,
+      model: GLTFOptions.ISS,
+      options: {
+        position: [100, 100, 100],
+      },
+    })
 
-    const commandModule = new Animatable(module.scene, (m) => {
+    const [jamesWebbTelescopeModel] = await addGLTF({
+      scene,
+      model: GLTFOptions.JamesWebbTelescope,
+      options: {
+        position: [-10, -20, -20],
+      },
+    })
+
+    const commandModule = new Animatable(commandModuleModel.scene, (m) => {
       m.rotation.y += 0.005
     })
+    const internationalSpaceStation = new Animatable(
+      internationalSpaceStationModel.scene,
+      (m) => {
+        m.rotation.y += 0.0005
+      }
+    )
+    const jamesWebbTelescope = new Animatable(
+      jamesWebbTelescopeModel.scene,
+      (m) => {
+        m.rotation.y += 0.001
+      }
+    )
 
     // create initial camera
     const camera = addPerspectiveCamera()
@@ -193,10 +232,15 @@ export default Vue.extend({
       const commandModuleIntersections = raycaster.intersectObjects(
         commandModule.scene.children
       )
+      const internationalSpaceStationIntersections = raycaster.intersectObjects(
+        internationalSpaceStation.scene.children
+      )
+      const jamesWebbTelescopeIntersections = raycaster.intersectObjects(
+        jamesWebbTelescope.scene.children
+      )
 
       // Clicked the command module
       if (!!commandModuleIntersections.length && state === States.travel) {
-        // call ThirdPersonCamera register new subject
         ship.removeObserver('camera')
         commandModule.addObserver({
           id: 'camera',
@@ -206,14 +250,78 @@ export default Vue.extend({
           defaultLookat: new THREE.Vector3(-5, 0, 0),
           defaultOffset: new THREE.Vector3(0, 0, 10),
         })
-        this.$data.focusedObject = 'commandModule'
+        this.$data.focusedObject = ClickableObjects.commandModule
         state = stateTransitions[state].click
+        return
       } else if (
         !commandModuleIntersections.length &&
         state === States.reading
       ) {
-        // call ThirdPersonCamera register new subject
         commandModule.removeObserver('camera')
+        ship.addObserver({
+          id: 'camera',
+          action: thirdPersonCamera.onTargetUpdate,
+        })
+        thirdPersonCamera.changeDefaults({
+          defaultLookat: new THREE.Vector3(0, 0, 10),
+          defaultOffset: new THREE.Vector3(0, 3, -7.5),
+        })
+        this.$data.focusedObject = null
+        state = stateTransitions[state].click
+        return
+      }
+
+      if (
+        !!internationalSpaceStationIntersections.length &&
+        state === States.travel
+      ) {
+        ship.removeObserver('camera')
+        internationalSpaceStation.addObserver({
+          id: 'camera',
+          action: thirdPersonCamera.onTargetUpdate,
+        })
+        thirdPersonCamera.changeDefaults({
+          defaultLookat: new THREE.Vector3(-5, 0, 0),
+          defaultOffset: new THREE.Vector3(0, 0, 10),
+        })
+        this.$data.focusedObject = ClickableObjects.internationalSpaceStation
+        state = stateTransitions[state].click
+        return
+      } else if (
+        !internationalSpaceStationIntersections.length &&
+        state === States.reading
+      ) {
+        internationalSpaceStation.removeObserver('camera')
+        ship.addObserver({
+          id: 'camera',
+          action: thirdPersonCamera.onTargetUpdate,
+        })
+        thirdPersonCamera.changeDefaults({
+          defaultLookat: new THREE.Vector3(0, 0, 10),
+          defaultOffset: new THREE.Vector3(0, 3, -7.5),
+        })
+        this.$data.focusedObject = null
+        state = stateTransitions[state].click
+        return
+      }
+
+      if (!!jamesWebbTelescopeIntersections.length && state === States.travel) {
+        ship.removeObserver('camera')
+        jamesWebbTelescope.addObserver({
+          id: 'camera',
+          action: thirdPersonCamera.onTargetUpdate,
+        })
+        thirdPersonCamera.changeDefaults({
+          defaultLookat: new THREE.Vector3(-5, 0, 0),
+          defaultOffset: new THREE.Vector3(0, 0, 10),
+        })
+        this.$data.focusedObject = ClickableObjects.jamesWebbTelescope
+        state = stateTransitions[state].click
+      } else if (
+        !jamesWebbTelescopeIntersections.length &&
+        state === States.reading
+      ) {
+        jamesWebbTelescope.removeObserver('camera')
         ship.addObserver({
           id: 'camera',
           action: thirdPersonCamera.onTargetUpdate,
@@ -233,6 +341,8 @@ export default Vue.extend({
       ship.update()
       thirdPersonCamera.update()
       commandModule.update()
+      internationalSpaceStation.update()
+      jamesWebbTelescope.update()
 
       torus.update()
 
@@ -255,19 +365,3 @@ export default Vue.extend({
   },
 })
 </script>
-<style lang="postcss" scoped>
-.animated-fade-in {
-  animation-name: fade-in;
-  animation-duration: 0.7s;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-</style>

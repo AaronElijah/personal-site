@@ -8,11 +8,15 @@ const gltfDir = `${
 export enum GLTFOptions {
   StarDestroyer = 'starDestroyer',
   ApolloModule = 'apolloModule',
+  ISS = 'internationalSpaceStation',
+  JamesWebbTelescope = 'jamesWebbTelescope',
 }
+
+// ISSTextures = []
 
 type GLTFOptionAsset = {
   sceneURL: string
-  getTextures: () => Promise<{ [key: string]: string }>
+  // getTextures: () => Promise<{ [key: string]: string }>
 }
 
 // TODO: fetch these resources on module level and only do it once
@@ -20,76 +24,85 @@ type GLTFOptionAsset = {
 const GLTFAssets: { [key in GLTFOptions]: GLTFOptionAsset } = {
   [GLTFOptions.StarDestroyer]: {
     sceneURL: `${gltfDir}/${GLTFOptions.StarDestroyer}/scene.gltf`,
-    getTextures: async () => {
-      return {
-        'textures/Tex_0016_0.dds_baseColor.png': await fetch(
-          `${gltfDir}/${GLTFOptions.StarDestroyer}/textures/Tex_0016_0.dds_baseColor.png`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-        'textures/Tex_0016_0.dds_emissive.png': await fetch(
-          `${gltfDir}/${GLTFOptions.StarDestroyer}/textures/Tex_0016_0.dds_emissive.png`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-        'textures/Tex_0020_0.dds_baseColor.png': await fetch(
-          `${gltfDir}/${GLTFOptions.StarDestroyer}/textures/Tex_0020_0.dds_baseColor.png`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-        'textures/Tex_0024_0.dds_baseColor.png': await fetch(
-          `${gltfDir}/${GLTFOptions.StarDestroyer}/textures/Tex_0024_0.dds_baseColor.png`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-      }
-    },
+    // getTextures: async () => {
+    //   return {
+    //     'textures/Tex_0016_0.dds_baseColor.png': await fetch(
+    //       `${gltfDir}/${GLTFOptions.StarDestroyer}/textures/Tex_0016_0.dds_baseColor.png`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //     'textures/Tex_0016_0.dds_emissive.png': await fetch(
+    //       `${gltfDir}/${GLTFOptions.StarDestroyer}/textures/Tex_0016_0.dds_emissive.png`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //     'textures/Tex_0020_0.dds_baseColor.png': await fetch(
+    //       `${gltfDir}/${GLTFOptions.StarDestroyer}/textures/Tex_0020_0.dds_baseColor.png`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //     'textures/Tex_0024_0.dds_baseColor.png': await fetch(
+    //       `${gltfDir}/${GLTFOptions.StarDestroyer}/textures/Tex_0024_0.dds_baseColor.png`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //   }
+    // },
   },
   [GLTFOptions.ApolloModule]: {
     sceneURL: `${gltfDir}/${GLTFOptions.ApolloModule}/scene.gltf`,
-    getTextures: async () => {
-      return {
-        'textures/material_baseColor.jpeg': await fetch(
-          `${gltfDir}/${GLTFOptions.ApolloModule}/textures/material_baseColor.jpeg`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-        'textures/ml.001_baseColor.jpeg': await fetch(
-          `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.001_baseColor.jpeg`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-        'textures/ml.002_baseColor.jpeg': await fetch(
-          `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.002_baseColor.jpeg`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-        'textures/ml.003_baseColor.jpeg': await fetch(
-          `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.003_baseColor.jpeg`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-        'textures/ml.004_baseColor.jpeg': await fetch(
-          `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.004_baseColor.jpeg`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-        'textures/ml.005_baseColor.jpeg': await fetch(
-          `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.005_baseColor.jpeg`
-        )
-          .then((r) => r.blob())
-          .then((blob) => URL.createObjectURL(blob)),
-      }
-    },
+    // getTextures: async () => {
+    //   return {
+    //     'textures/material_baseColor.jpeg': await fetch(
+    //       `${gltfDir}/${GLTFOptions.ApolloModule}/textures/material_baseColor.jpeg`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //     'textures/ml.001_baseColor.jpeg': await fetch(
+    //       `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.001_baseColor.jpeg`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //     'textures/ml.002_baseColor.jpeg': await fetch(
+    //       `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.002_baseColor.jpeg`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //     'textures/ml.003_baseColor.jpeg': await fetch(
+    //       `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.003_baseColor.jpeg`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //     'textures/ml.004_baseColor.jpeg': await fetch(
+    //       `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.004_baseColor.jpeg`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //     'textures/ml.005_baseColor.jpeg': await fetch(
+    //       `${gltfDir}/${GLTFOptions.ApolloModule}/textures/ml.005_baseColor.jpeg`
+    //     )
+    //       .then((r) => r.blob())
+    //       .then((blob) => URL.createObjectURL(blob)),
+    //   }
+    // },
+  },
+  [GLTFOptions.ISS]: {
+    sceneURL: `${gltfDir}/${GLTFOptions.ISS}/scene.gltf`,
+  },
+  [GLTFOptions.JamesWebbTelescope]: {
+    sceneURL: `${gltfDir}/${GLTFOptions.JamesWebbTelescope}/scene.gltf`,
   },
 }
 
 export const createGLTF = async (option: GLTFOptions) => {
   const loadingManager = new THREE.LoadingManager()
   const sceneURL = GLTFAssets[option].sceneURL
-  const textures = await GLTFAssets[option].getTextures()
+  // const textures = await GLTFAssets[option].getTextures()
   loadingManager.setURLModifier((url) => {
-    return textures[url] ?? url
+    // return textures[url] ?? url
+    // console.log(`${gltfDir}/${option}/${url}`)
+    // return `${gltfDir}/${option}/${url}` ?? url
+    return url
   })
   return await new GLTFLoader(loadingManager).loadAsync(sceneURL)
 }
