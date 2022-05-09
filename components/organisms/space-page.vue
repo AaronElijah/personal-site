@@ -5,7 +5,7 @@
       id="space-info"
       :class="`absolute w-1/3 h-1/2 z-10 left-[20%] top-1/4 bg-red-500 rounded-sm transition-opacity duration-700 ease-linear ${
         page ? 'opacity-100' : 'opacity-0'
-      } overflow-y-scroll`"
+      } overflow-y-auto x-invisible-scrollbar`"
     >
       <h1 v-if="page">{{ page.title }}</h1>
       <body v-if="page">
@@ -51,6 +51,7 @@ enum ClickableObjects {
 interface ISpacePageData {
   page: null | FetchReturn
   focusedObject: null | ClickableObjects
+  playState: States
 }
 
 export default Vue.extend({
@@ -59,26 +60,26 @@ export default Vue.extend({
     const data: ISpacePageData = {
       page: null,
       focusedObject: null,
+      playState: States.travel,
     }
     return data
   },
   watch: {
     async focusedObject() {
-      if (this.focusedObject === ClickableObjects.commandModule) {
-        this.page = (await this.$content(
-          ClickableObjects.commandModule
-        ).fetch()) as FetchReturn
-      } else if (
-        this.focusedObject === ClickableObjects.internationalSpaceStation
+      if (
+        Object.values<ClickableObjects | null>(ClickableObjects).includes(
+          this.focusedObject
+        )
       ) {
         this.page = (await this.$content(
-          ClickableObjects.internationalSpaceStation
+          this.focusedObject as ClickableObjects
         ).fetch()) as FetchReturn
       } else {
         this.page = null
       }
     },
   },
+
   async mounted() {
     const scene = new THREE.Scene()
 
@@ -154,7 +155,6 @@ export default Vue.extend({
         position: [100, 100, 100],
       },
     })
-
     const [jamesWebbTelescopeModel] = await addGLTF({
       scene,
       model: GLTFOptions.JamesWebbTelescope,
@@ -163,21 +163,26 @@ export default Vue.extend({
       },
     })
 
-    const commandModule = new Animatable(commandModuleModel.scene, (m) => {
-      m.rotation.y += 0.005
-    })
-    const internationalSpaceStation = new Animatable(
-      internationalSpaceStationModel.scene,
-      (m) => {
-        m.rotation.y += 0.0005
-      }
-    )
-    const jamesWebbTelescope = new Animatable(
-      jamesWebbTelescopeModel.scene,
-      (m) => {
-        m.rotation.y += 0.001
-      }
-    )
+    const clickableObjects = {
+      [ClickableObjects.commandModule]: new Animatable(
+        commandModuleModel.scene,
+        (m) => {
+          m.rotation.y += 0.005
+        }
+      ),
+      [ClickableObjects.internationalSpaceStation]: new Animatable(
+        internationalSpaceStationModel.scene,
+        (m) => {
+          m.rotation.y += 0.0005
+        }
+      ),
+      [ClickableObjects.jamesWebbTelescope]: new Animatable(
+        jamesWebbTelescopeModel.scene,
+        (m) => {
+          m.rotation.y += 0.001
+        }
+      ),
+    }
 
     // create initial camera
     const camera = addPerspectiveCamera()
@@ -200,18 +205,6 @@ export default Vue.extend({
     const pointer = new THREE.Vector2()
     const raycaster = new THREE.Raycaster()
 
-    // It's good to have a state machine but ideally we want to store data about the state we are in
-    // How can we do this? Maybe each state is more than just a string literal
-    let state: States = States.travel
-    const stateTransitions: { [key in States]: { click: States } } = {
-      [States.travel]: {
-        [Transitions.click]: States.reading,
-      },
-      [States.reading]: {
-        [Transitions.click]: States.travel,
-      },
-    }
-
     window.addEventListener('pointermove', (event) => {
       // calculate pointer position in normalized device coordinates
       // (-1 to +1) for both components
@@ -228,110 +221,42 @@ export default Vue.extend({
       ship.toggleControl(e.key, false)
     })
     window.addEventListener('click', () => {
-      // calculate objects intersecting the picking ray
-      const commandModuleIntersections = raycaster.intersectObjects(
-        commandModule.scene.children
-      )
-      const internationalSpaceStationIntersections = raycaster.intersectObjects(
-        internationalSpaceStation.scene.children
-      )
-      const jamesWebbTelescopeIntersections = raycaster.intersectObjects(
-        jamesWebbTelescope.scene.children
-      )
-
-      // Clicked the command module
-      if (!!commandModuleIntersections.length && state === States.travel) {
-        ship.removeObserver('camera')
-        commandModule.addObserver({
-          id: 'camera',
-          action: thirdPersonCamera.onTargetUpdate,
-        })
-        thirdPersonCamera.changeDefaults({
-          defaultLookat: new THREE.Vector3(-5, 0, 0),
-          defaultOffset: new THREE.Vector3(0, 0, 10),
-        })
-        this.$data.focusedObject = ClickableObjects.commandModule
-        state = stateTransitions[state].click
-        return
-      } else if (
-        !commandModuleIntersections.length &&
-        state === States.reading
-      ) {
-        commandModule.removeObserver('camera')
-        ship.addObserver({
-          id: 'camera',
-          action: thirdPersonCamera.onTargetUpdate,
-        })
-        thirdPersonCamera.changeDefaults({
-          defaultLookat: new THREE.Vector3(0, 0, 10),
-          defaultOffset: new THREE.Vector3(0, 3, -7.5),
-        })
-        this.$data.focusedObject = null
-        state = stateTransitions[state].click
-        return
-      }
-
-      if (
-        !!internationalSpaceStationIntersections.length &&
-        state === States.travel
-      ) {
-        ship.removeObserver('camera')
-        internationalSpaceStation.addObserver({
-          id: 'camera',
-          action: thirdPersonCamera.onTargetUpdate,
-        })
-        thirdPersonCamera.changeDefaults({
-          defaultLookat: new THREE.Vector3(-5, 0, 0),
-          defaultOffset: new THREE.Vector3(0, 0, 10),
-        })
-        this.$data.focusedObject = ClickableObjects.internationalSpaceStation
-        state = stateTransitions[state].click
-        return
-      } else if (
-        !internationalSpaceStationIntersections.length &&
-        state === States.reading
-      ) {
-        internationalSpaceStation.removeObserver('camera')
-        ship.addObserver({
-          id: 'camera',
-          action: thirdPersonCamera.onTargetUpdate,
-        })
-        thirdPersonCamera.changeDefaults({
-          defaultLookat: new THREE.Vector3(0, 0, 10),
-          defaultOffset: new THREE.Vector3(0, 3, -7.5),
-        })
-        this.$data.focusedObject = null
-        state = stateTransitions[state].click
-        return
-      }
-
-      if (!!jamesWebbTelescopeIntersections.length && state === States.travel) {
-        ship.removeObserver('camera')
-        jamesWebbTelescope.addObserver({
-          id: 'camera',
-          action: thirdPersonCamera.onTargetUpdate,
-        })
-        thirdPersonCamera.changeDefaults({
-          defaultLookat: new THREE.Vector3(-5, 0, 0),
-          defaultOffset: new THREE.Vector3(0, 0, 10),
-        })
-        this.$data.focusedObject = ClickableObjects.jamesWebbTelescope
-        state = stateTransitions[state].click
-      } else if (
-        !jamesWebbTelescopeIntersections.length &&
-        state === States.reading
-      ) {
-        jamesWebbTelescope.removeObserver('camera')
-        ship.addObserver({
-          id: 'camera',
-          action: thirdPersonCamera.onTargetUpdate,
-        })
-        thirdPersonCamera.changeDefaults({
-          defaultLookat: new THREE.Vector3(0, 0, 10),
-          defaultOffset: new THREE.Vector3(0, 3, -7.5),
-        })
-        this.$data.focusedObject = null
-        state = stateTransitions[state].click
+      for (const [name, clickable] of Object.entries(clickableObjects) as Array<
+        [ClickableObjects, Animatable]
+      >) {
+        const intersections = raycaster.intersectObjects(
+          clickable.scene.children
+        )
+        if (intersections.length > 0 && this.playState === States.travel) {
+          ship.removeObserver('camera')
+          clickable.addObserver({
+            id: 'camera',
+            action: thirdPersonCamera.onTargetUpdate,
+          })
+          thirdPersonCamera.changeDefaults({
+            defaultLookat: new THREE.Vector3(-5, 0, 0),
+            defaultOffset: new THREE.Vector3(0, 0, 10),
+          })
+          this.$data.focusedObject = name
+          this.transitionState(Transitions.click)
+          break
+        } else if (
+          intersections.length === 0 &&
+          this.playState === States.reading
+        ) {
+          clickable.removeObserver('camera')
+          ship.addObserver({
+            id: 'camera',
+            action: thirdPersonCamera.onTargetUpdate,
+          })
+          thirdPersonCamera.changeDefaults({
+            defaultLookat: new THREE.Vector3(0, 0, 10),
+            defaultOffset: new THREE.Vector3(0, 3, -7.5),
+          })
+          this.$data.focusedObject = null
+          this.transitionState(Transitions.click)
+          break
+        }
       }
     })
 
@@ -340,9 +265,9 @@ export default Vue.extend({
 
       ship.update()
       thirdPersonCamera.update()
-      commandModule.update()
-      internationalSpaceStation.update()
-      jamesWebbTelescope.update()
+      for (const clickable of Object.values(clickableObjects)) {
+        clickable.update()
+      }
 
       torus.update()
 
@@ -362,6 +287,19 @@ export default Vue.extend({
     }
 
     animate()
+  },
+  methods: {
+    transitionState(transition: Transitions) {
+      const stateTransitions: { [key in States]: { click: States } } = {
+        [States.travel]: {
+          [Transitions.click]: States.reading,
+        },
+        [States.reading]: {
+          [Transitions.click]: States.travel,
+        },
+      }
+      this.playState = stateTransitions[this.playState][transition]
+    },
   },
 })
 </script>

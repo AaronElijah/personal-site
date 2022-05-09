@@ -1,3 +1,5 @@
+const plugin = require('tailwindcss/plugin')
+
 module.exports = {
   mode: 'jit',
   darkMode: false, // or 'media' or 'class'
@@ -25,5 +27,20 @@ module.exports = {
   variants: {
     extend: {},
   },
-  plugins: [require('@tailwindcss/aspect-ratio')],
+  plugins: [
+    require('@tailwindcss/aspect-ratio'),
+    plugin(function ({ addUtilities }) {
+      addUtilities({
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        '.x-invisible-scrollbar::-webkit-scrollbar': {
+          display: 'none',
+        },
+        /* Hide scrollbar for IE, Edge and Firefox */
+        '.x-invisible-scrollbar': {
+          '-ms-overflow-style': 'none' /* IE and Edge */,
+          'scrollbar-width': 'none' /* Firefox */,
+        },
+      })
+    }),
+  ],
 }
