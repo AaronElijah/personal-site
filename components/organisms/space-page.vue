@@ -20,11 +20,7 @@ import * as THREE from 'three'
 import Vue from 'vue'
 
 import { addNebulaBackground } from '~/lib/scene/background'
-import {
-  addProfileBox,
-  addDonut,
-  addLargeBody,
-} from '~/lib/scene/objects/meshes/other'
+import { addProfileBox, addLargeBody } from '~/lib/scene/objects/meshes/other'
 import { addAsteroid } from '~/lib/scene/objects/meshes/asteroid'
 import { addGLTF } from '~/lib/scene/objects/models'
 import { addPointLight, addAmbientLight } from '~/lib/scene/lighting'
@@ -85,6 +81,7 @@ export default Vue.extend({
 
     const renderer = new THREE.WebGLRenderer({
       canvas: document.querySelector('#space-bg') as HTMLCanvasElement,
+      antialias: true,
     })
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -95,12 +92,12 @@ export default Vue.extend({
 
     await addNebulaBackground(scene)
 
-    const [torusMesh] = await addDonut(scene)
-    const torus = new Animatable(torusMesh, (torus) => {
-      torus.rotation.x += 0.0001
-      torus.rotation.y += 0.0005
-      torus.rotation.z += 0.0001
-    })
+    // const [torusMesh] = await addDonut(scene)
+    // const torus = new Animatable(torusMesh, (torus) => {
+    //   torus.rotation.x += 0.0001
+    //   torus.rotation.y += 0.0005
+    //   torus.rotation.z += 0.0001
+    // })
 
     const asteroids: THREE.Mesh<
       THREE.PolyhedronGeometry,
@@ -119,7 +116,7 @@ export default Vue.extend({
     const [jupiter] = await addLargeBody({
       scene,
       largeBody: 'jupiter',
-      options: { position: [50, 0, 70] },
+      options: { position: [100, 0, 100] },
     })
     const [neptune] = await addLargeBody({
       scene,
@@ -130,6 +127,11 @@ export default Vue.extend({
       scene,
       largeBody: 'sun',
       options: { position: [-60, 0, -70] },
+    })
+    const [earth] = await addLargeBody({
+      scene,
+      largeBody: 'earth',
+      options: { position: [25, 0, 25] },
     })
 
     // add star destroyer
@@ -269,12 +271,13 @@ export default Vue.extend({
         clickable.update()
       }
 
-      torus.update()
+      // torus.update()
 
       mars.rotation.y += 0.001
       neptune.rotation.y -= 0.001
       jupiter.rotation.y -= 0.0005
       sun.rotation.y += 0.0001
+      earth.rotation.y += 0.005
 
       for (let i = 0; i < asteroids.length; i++) {
         const asteroid = asteroids[i]

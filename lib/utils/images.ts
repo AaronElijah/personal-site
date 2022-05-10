@@ -8,7 +8,9 @@ const roughness = 'roughness.jpg'
 const displacement = 'height.png'
 const normal = 'normal.jpg'
 const metal = 'metallic.jpg'
+const bump = 'bump.jpg'
 
+// materials
 const crystalMetal = 'crystal_metal'
 const damascusSteel = 'damascus_steel'
 const greenCrystal = 'green_crystal'
@@ -17,6 +19,15 @@ const lapisLazuli = 'lapis_lazuli'
 
 export const StaticImages = {
   profile: `${imagesDir}/profile.jpg`,
+  earth: {
+    basecolor: `${imagesDir}/earth/${basecolor}`,
+    bump: `${imagesDir}/earth/${bump}`,
+    specular: `${imagesDir}/earth/specular.jpg`,
+    clouds: {
+      basecolor: `${imagesDir}/earth/clouds/${basecolor}`,
+      transparency: `${imagesDir}/earth/clouds/transparency.jpg`,
+    },
+  },
   sun: `${imagesDir}/8k_sun.jpg`,
   neptune: `${imagesDir}/2k_neptune.jpg`,
   jupiter: `${imagesDir}/8k_jupiter.jpg`,
