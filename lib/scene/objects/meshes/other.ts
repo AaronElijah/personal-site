@@ -3,52 +3,16 @@ import { clientSideOnly, StaticImages } from '~/lib/utils'
 
 interface IAddLargeBody {
   scene: THREE.Scene
-  largeBody: 'mars' | 'sun' | 'neptune' | 'jupiter'
+  largeBody: 'mars' | 'sun' | 'neptune' | 'jupiter' | 'earth'
   options: {
     position: [number, number, number]
   }
 }
 
 type RAddSpaceBody = [
-  THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>,
+  THREE.Mesh<THREE.BufferGeometry, THREE.Material>,
   THREE.Scene
 ]
-
-const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, {
-  format: THREE.RGBAFormat,
-  generateMipmaps: true,
-  minFilter: THREE.LinearMipmapLinearFilter,
-  encoding: THREE.sRGBEncoding,
-})
-
-const cubeCamera = new THREE.CubeCamera(1, 10000, cubeRenderTarget)
-
-export const addDonut = clientSideOnly(
-  async (scene: THREE.Scene): Promise<RAddSpaceBody> => {
-    const loader = new THREE.TextureLoader()
-
-    // Shapes in threejs require a geometry (set of coords) and a material
-    const geometry = new THREE.TorusGeometry(200, 3, 16, 100)
-    const material = new THREE.MeshStandardMaterial({
-      map: await loader.loadAsync(StaticImages.damascusSteel.basecolor),
-      metalnessMap: await loader.loadAsync(StaticImages.damascusSteel.metal),
-      normalMap: await loader.loadAsync(StaticImages.damascusSteel.normal),
-      aoMap: await loader.loadAsync(StaticImages.damascusSteel.ao),
-      roughnessMap: await loader.loadAsync(
-        StaticImages.damascusSteel.roughness
-      ),
-      displacementMap: await loader.loadAsync(
-        StaticImages.damascusSteel.displacement
-      ),
-      envMap: cubeRenderTarget.texture,
-    })
-    const torus = new THREE.Mesh(geometry, material)
-    // torus.geometry.attributes.uv2 = torus.geometry.attributes.uv
-    torus.add(cubeCamera)
-    scene.add(torus)
-    return [torus, scene]
-  }
-)
 
 export const addLargeBody = clientSideOnly(
   async ({
@@ -56,7 +20,7 @@ export const addLargeBody = clientSideOnly(
     largeBody,
     options: { position },
   }: IAddLargeBody): Promise<RAddSpaceBody> => {
-    let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>
+    let mesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material>
     const loader = new THREE.TextureLoader()
     switch (largeBody) {
       case 'mars': {
@@ -95,6 +59,28 @@ export const addLargeBody = clientSideOnly(
             map: await loader.loadAsync(StaticImages.neptune),
           })
         )
+        break
+      }
+      case 'earth': {
+        mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(10, 64, 64),
+          new THREE.MeshPhongMaterial({
+            map: await loader.loadAsync(StaticImages.earth.basecolor),
+            bumpMap: await loader.loadAsync(StaticImages.earth.bump),
+            specularMap: await loader.loadAsync(StaticImages.earth.specular),
+          })
+        )
+        const cloudMesh = new THREE.Mesh(
+          new THREE.SphereGeometry(10.2, 64, 64),
+          new THREE.MeshPhongMaterial({
+            map: await loader.loadAsync(StaticImages.earth.clouds.basecolor),
+            alphaMap: await loader.loadAsync(
+              StaticImages.earth.clouds.transparency
+            ),
+            transparent: true,
+          })
+        )
+        mesh.add(cloudMesh)
         break
       }
       default: {
