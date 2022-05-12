@@ -1,12 +1,3 @@
-@font-face {
-  font-family: 'Joystix';
-  src: local('Joystix'), url(/joystix.ttf) format('truetype');
-}
-
-* {
-  font-family: 'Joystix', sans-serif;
-}
-
 html {
   overflow: hidden;
 }

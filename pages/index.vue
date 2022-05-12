@@ -1,13 +1,12 @@
 <template>
-  <silly-page />
+  <space-page />
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import SillyPage from '~/components/organisms/silly-page.vue'
+import SpacePage from '~/components/organisms/space-page.vue'
 
 export default Vue.extend({
-  name: 'IndexPage',
-  components: { 'silly-page': SillyPage },
-  layout: 'side-bar',
+  name: 'SpacePage',
+  components: { 'space-page': SpacePage },
 })
 </script>
