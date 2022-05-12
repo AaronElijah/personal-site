@@ -2,16 +2,16 @@ import * as THREE from 'three'
 import { Observable, ObserverAction } from '~/lib/observable'
 
 export class Animatable implements Observable {
-  public scene: THREE.Object3D
+  public object: THREE.Object3D
   private handleUpdate: (object: THREE.Object3D) => void
   private observers: Array<ObserverAction> = []
 
   constructor(
-    scene: THREE.Object3D,
+    object: THREE.Object3D,
     handleUpdate: (object: THREE.Object3D) => void,
     observerActions?: Array<ObserverAction>
   ) {
-    this.scene = scene
+    this.object = object
     this.handleUpdate = handleUpdate
     if (observerActions) this.observers = observerActions
   }
@@ -28,9 +28,9 @@ export class Animatable implements Observable {
   }
 
   update() {
-    this.handleUpdate(this.scene)
+    this.handleUpdate(this.object)
     this.observers.forEach(({ action }) => {
-      action(this.scene)
+      action(this.object)
     })
   }
 }

@@ -20,15 +20,18 @@ import * as THREE from 'three'
 import Vue from 'vue'
 
 import { addNebulaBackground } from '~/lib/scene/background'
-import { addProfileBox, addLargeBody } from '~/lib/scene/objects/meshes/other'
-import { addAsteroid } from '~/lib/scene/objects/meshes/asteroid'
-import { addGLTF } from '~/lib/scene/objects/models'
+import {
+  addProfileBox,
+  addSpaceBody,
+} from '~/lib/scene/objects/meshes/largeBodies'
+import { addGLTF } from '~/lib/scene/objects/gltf'
 import { addPointLight, addAmbientLight } from '~/lib/scene/lighting'
 import { addPerspectiveCamera, ThirdPersonCamera } from '~/lib/camera'
 import { Controllable } from '~/lib/controllable'
 import { flightControls } from '~/lib/utils/flightControls'
 import { Animatable } from '~/lib/animatable'
 import { GLTFOptions } from '~/lib/utils/gltf'
+import { Earth } from '~/lib/scene/objects/earth'
 
 enum States {
   travel = 'travel',
@@ -92,47 +95,64 @@ export default Vue.extend({
 
     await addNebulaBackground(scene)
 
-    // const [torusMesh] = await addDonut(scene)
-    // const torus = new Animatable(torusMesh, (torus) => {
-    //   torus.rotation.x += 0.0001
-    //   torus.rotation.y += 0.0005
-    //   torus.rotation.z += 0.0001
-    // })
-
-    const asteroids: THREE.Mesh<
-      THREE.PolyhedronGeometry,
-      THREE.MeshStandardMaterial
-    >[] = []
-    const numAsteroids = 10
-    for (let i = 0; i < numAsteroids; i++)
-      asteroids.push((await addAsteroid(scene))[0])
-
     await addProfileBox(scene)
-    const [mars] = await addLargeBody({
+    const [mars] = await addSpaceBody({
       scene,
-      largeBody: 'mars',
-      options: { position: [-20, 0, 50] },
+      spaceBody: 'mars',
+      options: { position: [-20, 10, 50] },
     })
-    const [jupiter] = await addLargeBody({
+    const [jupiter] = await addSpaceBody({
       scene,
-      largeBody: 'jupiter',
-      options: { position: [100, 0, 100] },
+      spaceBody: 'jupiter',
+      options: { position: [100, -30, 100] },
     })
-    const [neptune] = await addLargeBody({
+    const [neptune] = await addSpaceBody({
       scene,
-      largeBody: 'neptune',
-      options: { position: [30, 0, -40] },
+      spaceBody: 'neptune',
+      options: { position: [30, 50, -40] },
     })
-    const [sun] = await addLargeBody({
+    const [sun] = await addSpaceBody({
       scene,
-      largeBody: 'sun',
-      options: { position: [-60, 0, -70] },
+      spaceBody: 'sun',
+      options: { position: [-60, -40, -70] },
     })
-    const [earth] = await addLargeBody({
-      scene,
-      largeBody: 'earth',
-      options: { position: [25, 0, 25] },
-    })
+
+    const largeBodies = {
+      mars: new Animatable(mars, (o) => {
+        o.rotation.y += 0.001
+      }),
+      jupiter: new Animatable(jupiter, (o) => {
+        o.rotation.y += 0.001
+      }),
+      neptune: new Animatable(neptune, (o) => {
+        o.rotation.y += 0.0005
+      }),
+      sun: new Animatable(sun, (o) => {
+        o.rotation.y += 0.0001
+      }),
+    }
+
+    const cities = [
+      {
+        name: 'Singapore',
+        latitude: 1.3521,
+        longitude: 103.8198,
+        color: 0xffffff,
+      },
+      {
+        name: 'London',
+        latitude: 51.5085,
+        longitude: -0.1257,
+        color: 0xffff00,
+      },
+    ]
+    const earth = await new Earth(20, new THREE.Vector3(20, 0, 20)).addMeshes(
+      scene
+    )
+    earth
+      .addCities(cities)
+      .addPath(cities[0], cities[1])
+      .addPath(cities[1], cities[0])
 
     // add star destroyer
     const [starDestroyer] = await addGLTF({
@@ -227,7 +247,7 @@ export default Vue.extend({
         [ClickableObjects, Animatable]
       >) {
         const intersections = raycaster.intersectObjects(
-          clickable.scene.children
+          clickable.object.children
         )
         if (intersections.length > 0 && this.playState === States.travel) {
           ship.removeObserver('camera')
@@ -241,7 +261,7 @@ export default Vue.extend({
           })
           this.$data.focusedObject = name
           this.transitionState(Transitions.click)
-          break
+          return
         } else if (
           intersections.length === 0 &&
           this.playState === States.reading
@@ -257,7 +277,7 @@ export default Vue.extend({
           })
           this.$data.focusedObject = null
           this.transitionState(Transitions.click)
-          break
+          return
         }
       }
     })
@@ -271,20 +291,11 @@ export default Vue.extend({
         clickable.update()
       }
 
-      // torus.update()
-
-      mars.rotation.y += 0.001
-      neptune.rotation.y -= 0.001
-      jupiter.rotation.y -= 0.0005
-      sun.rotation.y += 0.0001
-      earth.rotation.y += 0.005
-
-      for (let i = 0; i < asteroids.length; i++) {
-        const asteroid = asteroids[i]
-        asteroid.rotation.x += 0.005
-        asteroid.rotation.y += 0.005
-        asteroid.rotation.z += 0.005
+      for (const largeBody of Object.values(largeBodies)) {
+        largeBody.update()
       }
+
+      earth.update()
 
       renderer.render(scene, camera)
     }
