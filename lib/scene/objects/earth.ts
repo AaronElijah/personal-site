@@ -12,6 +12,7 @@ export type City = {
 export class Earth {
   private radius: number
   private position: THREE.Vector3
+  private animate?: (object: THREE.Mesh) => void
 
   private planetMesh?: THREE.Mesh
   // private atmosphereMesh?: THREE.Mesh
@@ -25,10 +26,12 @@ export class Earth {
 
   constructor(
     radius: number = 10,
-    position: THREE.Vector3 = new THREE.Vector3(0, 0, 0)
+    position: THREE.Vector3 = new THREE.Vector3(0, 0, 0),
+    animate?: (object: THREE.Mesh) => void
   ) {
     this.radius = radius
     this.position = position
+    this.animate = animate
   }
 
   async addMeshes(scene: THREE.Scene) {
@@ -73,6 +76,7 @@ export class Earth {
       this.position.y,
       this.position.z
     )
+    this.planetMesh.visible = false
     scene.add(this.planetMesh)
     return this
   }
@@ -186,6 +190,24 @@ export class Earth {
     return this
   }
 
+  get visible() {
+    if (!this.planetMesh) throw new Error('Planet mesh not initialized')
+    return this.planetMesh?.visible
+  }
+
+  set visible(visible: boolean) {
+    if (!this.planetMesh) throw new Error('Planet mesh not initialized')
+    this.planetMesh.visible = visible
+  }
+
+  isPopulated() {
+    return Object.keys(this.cities).length > 0
+  }
+
+  totalPaths() {
+    return this.paths.length
+  }
+
   update() {
     const currentPaths = []
     for (const path of this.paths) {
@@ -224,6 +246,9 @@ export class Earth {
       if (path.progress < 1) currentPaths.push(path)
     }
     this.paths = currentPaths
+
+    if (this.animate && this.planetMesh && this.visible)
+      this.animate(this.planetMesh)
     return this
   }
 }

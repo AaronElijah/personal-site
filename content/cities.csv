@@ -1,54 +1,64 @@
 name, latitude, longitude, color
-Singapore, 1.3521, 103.8198, #ffffff
-Tokyo, 35.6895, 139.6917, #ffffff
-New York City, 40.7128, -74.0060, #ffffff
-Sao Paulo, -23.5489, -46.6388, #ffffff
-Seoul, 37.5665, 126.9780, #ffffff
-Shanghai, 31.2304, 121.4737, #ffffff
-Lima, -12.0464, -77.0428, #ffffff
-Mexico City, 19.4326, -99.1332, #ffffff
-Los Angeles, 34.0522, -118.2437, #ffffff
-Bogota, 4.6473, -74.0814, #ffffff
-Lahore, 31.5204, 74.3587, #ffffff
-Jakarta, -6.1862, 106.8063, #ffffff
-Tehran, 35.7090, 51.4065, #ffffff
-Moscow, 55.7558, 37.6173, #ffffff
-Baghdad, 33.3157, 44.3922, #ffffff
-Riyadh, 24.6748, 46.6753, #ffffff
-Karachi, 24.9443, 67.0822, #ffffff
-Delhi, 28.7041, 77.1025, #ffffff
-Mumbai, 19.0760, 72.8777, #ffffff
-Beijing, 39.9059, 116.3907, #ffffff
-Paris, 48.8567, 2.3510, #ffffff
-Berlin, 52.5200, 13.4050, #ffffff
-London, 51.5074, -0.1278, #ffffff
-Madrid, 40.4167, -3.7033, #ffffff
-Rome, 41.9000, 12.5000, #ffffff
-Cairo, 30.0444, 31.2357, #ffffff
-Istanbul, 41.0082, 28.9647, #ffffff
-Wuhan, 30.5928, 114.3055, #ffffff
-Kolkata, 22.5726, 88.3639, #ffffff
-Hong Kong, 22.3964, 114.1095, #ffffff
-Macau, 22.1987, 113.5439, #ffffff
-Taibei, 22.3964, 114.1095, #ffffff
-Nanjing, 32.0500, 118.8000, #ffffff
-Kuala Lumpur, 3.1502, 101.7090, #ffffff
-Canberra, -35.2800, 149.1300, #ffffff
-Sydney, -33.8688, 151.2093, #ffffff
-Melbourne, -37.8136, 144.9631, #ffffff
-Wellington, -41.2865, 174.7762, #ffffff
-Addis Ababa, 9.0034, 38.7575, #ffffff
-Johannesburg, -26.2041, 28.0473, #ffffff
-Santiago, -33.4489, -70.6693, #ffffff
-Brasilia, -15.7816, -47.9292, #ffffff
-Buenos Aires, -34.6118, -58.4173, #ffffff
-Tegucigalpa, 14.0710, -87.1871, #ffffff
-Shenzhen, 22.5439, 114.0579, #ffffff
-Lisbon, 38.7223, -9.1393, #ffffff
-Copenhagen, 55.6763, 12.5681, #ffffff
-Hanoi, 21.0278, 105.8048, #ffffff
-Oslo, 59.9139, 10.7522, #ffffff
-Stockholm, 59.3293, 18.0686, #ffffff
-Helsinki, 60.1651, 24.9351, #ffffff
-Kiev, 50.4186, 30.5367, #ffffff
-Bucharest, 44.4326, 26.1025, #ffffff
+Singapore, 1.3521, 103.8198, 0x000000
+Tokyo, 35.6895, 139.6917, 0x000000
+New York City, 40.7128, -74.0060, 0x000000
+Sao Paulo, -23.5489, -46.6388, 0x000000
+Seoul, 37.5665, 126.9780, 0x000000
+Shanghai, 31.2304, 121.4737, 0x000000
+Lima, -12.0464, -77.0428, 0x000000
+Mexico City, 19.4326, -99.1332, 0x000000
+Los Angeles, 34.0522, -118.2437, 0x000000
+Bogota, 4.6473, -74.0814, 0x000000
+Lahore, 31.5204, 74.3587, 0x000000
+Jakarta, -6.1862, 106.8063, 0x000000
+Tehran, 35.7090, 51.4065, 0x000000
+Moscow, 55.7558, 37.6173, 0x000000
+Baghdad, 33.3157, 44.3922, 0x000000
+Riyadh, 24.6748, 46.6753, 0x000000
+Karachi, 24.9443, 67.0822, 0x000000
+Delhi, 28.7041, 77.1025, 0x000000
+Mumbai, 19.0760, 72.8777, 0x000000
+Beijing, 39.9059, 116.3907, 0x000000
+Paris, 48.8567, 2.3510, 0x000000
+Berlin, 52.5200, 13.4050, 0x000000
+London, 51.5074, -0.1278, 0x000000
+Madrid, 40.4167, -3.7033, 0x000000
+Rome, 41.9000, 12.5000, 0x000000
+Cairo, 30.0444, 31.2357, 0x000000
+Istanbul, 41.0082, 28.9647, 0x000000
+Wuhan, 30.5928, 114.3055, 0x000000
+Kolkata, 22.5726, 88.3639, 0x000000
+Hong Kong, 22.3964, 114.1095, 0x000000
+Macau, 22.1987, 113.5439, 0x000000
+Taibei, 22.3964, 114.1095, 0x000000
+Nanjing, 32.0500, 118.8000, 0x000000
+Kuala Lumpur, 3.1502, 101.7090, 0x000000
+Canberra, -35.2800, 149.1300, 0x000000
+Sydney, -33.8688, 151.2093, 0x000000
+Melbourne, -37.8136, 144.9631, 0x000000
+Wellington, -41.2865, 174.7762, 0x000000
+Addis Ababa, 9.0034, 38.7575, 0x000000
+Johannesburg, -26.2041, 28.0473, 0x000000
+Santiago, -33.4489, -70.6693, 0x000000
+Brasilia, -15.7816, -47.9292, 0x000000
+Buenos Aires, -34.6118, -58.4173, 0x000000
+Tegucigalpa, 14.0710, -87.1871, 0x000000
+Shenzhen, 22.5439, 114.0579, 0x000000
+Lisbon, 38.7223, -9.1393, 0x000000
+Copenhagen, 55.6763, 12.5681, 0x000000
+Hanoi, 21.0278, 105.8048, 0x000000
+Oslo, 59.9139, 10.7522, 0x000000
+Stockholm, 59.3293, 18.0686, 0x000000
+Helsinki, 60.1651, 24.9351, 0x000000
+Kiev, 50.4186, 30.5367, 0x000000
+Bucharest, 44.4326, 26.1025, 0x000000
+San Francisco, 37.7749, -122.4194, 0x000000
+Denver, 39.7392, -104.9903, 0x000000
+Washington, 38.9072, -77.0369, 0x000000
+Chicago, 41.8781, -87.6298, 0x000000
+Mexico City, 19.4326, -99.1332, 0x000000
+Seattle, 47.6062, -122.3321, 0x000000
+Miami, 25.7617, -80.1918, 0x000000
+Bogota, 4.6473, -74.0814, 0x000000
+Houston, 29.7628, -95.3680, 0x000000
+Ottawa, 45.4215, -75.6972, 0x000000

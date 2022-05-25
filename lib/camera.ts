@@ -61,8 +61,8 @@ function addOrbitControls(camera: THREE.Camera, renderer: THREE.Renderer) {
 
 class ThirdPersonCamera {
   public camera: THREE.PerspectiveCamera
-  private targetPosition: THREE.Vector3 // position of the target of the camera
-  private targetQuaternion: THREE.Quaternion = new THREE.Quaternion() // quaternion of the target of the camera
+  private targetPosition: THREE.Vector3
+  private targetQuaternion: THREE.Quaternion = new THREE.Quaternion()
   private defaultOffset: THREE.Vector3
   private defaultLookat: THREE.Vector3
   private lerpAlpha: number

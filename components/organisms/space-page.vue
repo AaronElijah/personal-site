@@ -3,14 +3,24 @@
     <canvas id="space-bg"></canvas>
     <div
       id="space-info"
-      :class="`absolute w-1/3 h-1/2 z-10 left-[20%] top-1/4 bg-red-500 rounded-sm transition-opacity duration-700 ease-linear ${
+      :class="`absolute w-1/3 h-1/2 z-10 left-[20%] top-1/4 bg-green-300 rounded-lg transition-opacity duration-700 ease-linear p-4 ${
         page ? 'opacity-100' : 'opacity-0'
-      } overflow-y-auto x-invisible-scrollbar`"
+      }`"
     >
-      <h1 v-if="page">{{ page.title }}</h1>
-      <body v-if="page">
-        {{ page.description }}
-      </body>
+      <div v-if="page" class="h-5/6 overflow-auto x-invisible-scrollbar">
+        <h1 v-if="page" class="text-lg text-center mb-4">{{ page.title }}</h1>
+        <div v-if="page">
+          {{ page.description }}
+        </div>
+      </div>
+      <div v-if="page" class="flex justify-center h-1/6 px-4 pt-4">
+        <button
+          class="hover:bg-green-800 hover:text-white rounded-md transition-colors duration-200 p-2"
+          @click="collectObject"
+        >
+          Collect me!
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -53,6 +63,7 @@ interface ISpacePageData {
   focusedObject: ClickableObjects | null
   playState: States
   cities: City[]
+  isShowEarth: boolean
 }
 
 export default Vue.extend({
@@ -64,6 +75,7 @@ export default Vue.extend({
       focusedObject: null,
       collectedObjects: [],
       cities: [],
+      isShowEarth: false,
     }
     return data
   },
@@ -87,13 +99,16 @@ export default Vue.extend({
       ) {
         const cities = (await this.$content('cities').fetch()) as FetchReturn
         if (cities.body) {
-          this.cities = (cities.body as Array<any>).map((city) => ({
-            name: city.name,
-            latitude: Number(city.latitude),
-            longitude: Number(city.longitude),
-            color: Number(city.color),
-          }))
+          ;(cities.body as Array<any>).forEach((city) => {
+            this.cities.push({
+              name: city.name as string,
+              latitude: Number(city.latitude),
+              longitude: Number(city.longitude),
+              color: Number(city.color),
+            })
+          })
         }
+        this.isShowEarth = true
       }
     },
   },
@@ -109,6 +124,7 @@ export default Vue.extend({
 
     addPointLight({ scene, options: { position: [10, 10, 10] } })
     addPointLight({ scene, options: { position: [-10, -10, -10] } })
+    addPointLight({ scene, options: { position: [60, 0, 60] } })
     addAmbientLight({ scene })
 
     await addNebulaBackground(scene)
@@ -150,27 +166,9 @@ export default Vue.extend({
       }),
     }
 
-    const cities = [
-      {
-        name: 'Singapore',
-        latitude: 1.3521,
-        longitude: 103.8198,
-        color: 0xffffff,
-      },
-      {
-        name: 'London',
-        latitude: 51.5085,
-        longitude: -0.1257,
-        color: 0xffff00,
-      },
-    ]
-    const earth = await new Earth(20, new THREE.Vector3(20, 0, 20)).addMeshes(
-      scene
-    )
-    earth
-      .addCities(cities)
-      .addPath(cities[0], cities[1])
-      .addPath(cities[1], cities[0])
+    const earth = await new Earth(20, new THREE.Vector3(50, 0, 50), (obj) => {
+      obj.rotation.y += 0.001
+    }).addMeshes(scene)
 
     // add star destroyer
     const [starDestroyer] = await addGLTF({
@@ -288,7 +286,34 @@ export default Vue.extend({
       }
     })
 
-    function animate() {
+    const addRandomPath = () => {
+      const firstCityIndex = Math.floor(
+        Math.random() * (this.cities.length + 1)
+      )
+      let secondCityIndex = Math.floor(Math.random() * (this.cities.length + 1))
+      while (firstCityIndex === secondCityIndex) {
+        secondCityIndex = Math.floor(Math.random() * (this.cities.length + 1))
+      }
+
+      // For some reason, accessing arrays in this.$data return proxies with getters/setters
+      // We create new objects instead to bypass that rule
+      earth.addPath(
+        {
+          name: this.cities[firstCityIndex].name,
+          latitude: this.cities[firstCityIndex].latitude,
+          longitude: this.cities[firstCityIndex].longitude,
+          color: this.cities[firstCityIndex].color,
+        },
+        {
+          name: this.cities[secondCityIndex].name,
+          latitude: this.cities[secondCityIndex].latitude,
+          longitude: this.cities[secondCityIndex].longitude,
+          color: this.cities[secondCityIndex].color,
+        }
+      )
+    }
+
+    const animate = () => {
       requestAnimationFrame(animate)
 
       ship.update()
@@ -301,7 +326,12 @@ export default Vue.extend({
         largeBody.update()
       }
 
-      earth.update()
+      if (this.isShowEarth && this.cities) {
+        if (!earth.visible) earth.visible = true
+        if (!earth.isPopulated()) earth.addCities(this.cities)
+        if (earth.totalPaths() < 100) setTimeout(addRandomPath, 1000)
+        earth.update()
+      }
 
       renderer.render(scene, camera)
     }
@@ -319,6 +349,13 @@ export default Vue.extend({
         },
       }
       this.playState = stateTransitions[this.playState][transition]
+    },
+    collectObject() {
+      if (
+        this.focusedObject &&
+        !this.collectedObjects.includes(this.focusedObject)
+      )
+        this.collectedObjects = [...this.collectedObjects, this.focusedObject]
     },
   },
 })
