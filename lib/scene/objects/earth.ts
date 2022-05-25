@@ -2,7 +2,7 @@ import * as THREE from 'three'
 
 import { StaticImages } from '~/lib/utils'
 
-type City = {
+export type City = {
   name: string
   latitude: number
   longitude: number

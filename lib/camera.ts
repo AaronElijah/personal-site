@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { Controllable } from 'lib/controllable'
 import { Observable } from 'lib/observable'
 
 interface IAddCameraToSubject {
