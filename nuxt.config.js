@@ -32,7 +32,7 @@ export default {
 
   // Import components and subdirs: https://go.nuxtjs.dev/config-components
   components: {
-    dirs: ['~/components', '~/components/atoms', '~/components/compounds'],
+    dirs: ['~/components', '~/components/compounds'],
   },
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules

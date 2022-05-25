@@ -39,7 +39,7 @@ export const addAmbientLight = clientSideOnly(
     scene,
     options: { color = 0xf7efc5 } = {},
   }: IAddAmbientLight): [THREE.Scene, THREE.AmbientLight] => {
-    const light = new THREE.AmbientLight(color, 0.35)
+    const light = new THREE.AmbientLight(color, 0.75)
     scene.add(light)
     return [scene, light]
   }
