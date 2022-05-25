@@ -31,7 +31,7 @@ import { Controllable } from '~/lib/controllable'
 import { flightControls } from '~/lib/utils/flightControls'
 import { Animatable } from '~/lib/animatable'
 import { GLTFOptions } from '~/lib/utils/gltf'
-import { Earth } from '~/lib/scene/objects/earth'
+import { City, Earth } from '~/lib/scene/objects/earth'
 
 enum States {
   travel = 'travel',
@@ -48,18 +48,22 @@ enum ClickableObjects {
 }
 
 interface ISpacePageData {
-  page: null | FetchReturn
-  focusedObject: null | ClickableObjects
+  collectedObjects: ClickableObjects[]
+  page: FetchReturn | null
+  focusedObject: ClickableObjects | null
   playState: States
+  cities: City[]
 }
 
 export default Vue.extend({
   name: 'SpacePage',
   data: () => {
     const data: ISpacePageData = {
+      playState: States.travel,
       page: null,
       focusedObject: null,
-      playState: States.travel,
+      collectedObjects: [],
+      cities: [],
     }
     return data
   },
@@ -77,8 +81,22 @@ export default Vue.extend({
         this.page = null
       }
     },
+    async collectedObjects() {
+      if (
+        this.collectedObjects.length === Object.keys(ClickableObjects).length
+      ) {
+        const cities = (await this.$content('cities').fetch()) as FetchReturn
+        if (cities.body) {
+          this.cities = (cities.body as Array<any>).map((city) => ({
+            name: city.name,
+            latitude: Number(city.latitude),
+            longitude: Number(city.longitude),
+            color: Number(city.color),
+          }))
+        }
+      }
+    },
   },
-
   async mounted() {
     const scene = new THREE.Scene()
 
@@ -248,15 +266,6 @@ export default Vue.extend({
           clickable.object.children
         )
         if (intersections.length > 0 && this.playState === States.travel) {
-          // ship.removeObserver('camera')
-          // clickable.addObserver({
-          //   id: 'camera',
-          //   action: thirdPersonCamera.onTargetUpdate,
-          // })
-          // thirdPersonCamera.changeDefaults({
-          //   defaultLookat: new THREE.Vector3(-5, 0, 0),
-          //   defaultOffset: new THREE.Vector3(0, 0, 10),
-          // })
           thirdPersonCamera.removeCurrentTarget().registerNewTarget(clickable, {
             defaultLookat: new THREE.Vector3(-5, 0, 0),
             defaultOffset: new THREE.Vector3(0, 0, 10),
@@ -268,11 +277,6 @@ export default Vue.extend({
           intersections.length === 0 &&
           this.playState === States.reading
         ) {
-          // clickable.removeObserver('camera')
-          // ship.addObserver({
-          //   id: 'camera',
-          //   action: thirdPersonCamera.onTargetUpdate,
-          // })
           thirdPersonCamera.removeCurrentTarget().registerNewTarget(ship, {
             defaultLookat: new THREE.Vector3(0, 0, 10),
             defaultOffset: new THREE.Vector3(0, 3, -7.5),

@@ -19,13 +19,8 @@ type KeyControlState = { isToggled: boolean; action: KeyAction }
 export class Controllable implements Observable {
   private object: THREE.Object3D
   private controlStates: Map<string, KeyControlState>
-  // private observerActions: Array<ObserverAction> = []
 
-  constructor(
-    object: THREE.Object3D,
-    actions: Map<string, KeyAction>
-    // observerActions?: Array<ObserverAction>
-  ) {
+  constructor(object: THREE.Object3D, actions: Map<string, KeyAction>) {
     this.object = object
 
     this.controlStates = new Map()
@@ -35,8 +30,6 @@ export class Controllable implements Observable {
         action: action[1],
       })
     })
-    // if (observerActions)
-    //   Array.prototype.push.apply(this.observerActions, observerActions)
   }
 
   toggleControl(control: string, state?: boolean) {
@@ -48,17 +41,6 @@ export class Controllable implements Observable {
     })
   }
 
-  // addObserver(observerAction: ObserverAction) {
-  //   this.observerActions.push(observerAction)
-  // }
-
-  // removeObserver(observerId: string) {
-  //   if (this.observerActions)
-  //     this.observerActions = this.observerActions.filter(
-  //       (action) => action.id !== observerId
-  //     )
-  // }
-
   /**
    * Loop over the current control state and apply action for each key that is toggled.
    * Run any actions for observers of this controlled object.
@@ -67,9 +49,6 @@ export class Controllable implements Observable {
     this.controlStates.forEach((controlState) => {
       if (controlState.isToggled) controlState.action(this.object)
     })
-    // this.observerActions.forEach(({ action }) => {
-    //   action(this.object)
-    // })
   }
 
   public get position(): THREE.Vector3 {
