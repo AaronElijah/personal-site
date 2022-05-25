@@ -206,7 +206,9 @@ export default Vue.extend({
       ),
     }
 
-    // create initial camera
+    const ship = new Controllable(starDestroyer.scene, flightControls)
+
+    // create camera
     const camera = addPerspectiveCamera()
     const thirdPersonCamera = new ThirdPersonCamera({
       camera,
@@ -214,11 +216,7 @@ export default Vue.extend({
       quaternion: new THREE.Quaternion(),
       defaultOffset: new THREE.Vector3(0, 3, -7.5),
       defaultLookat: new THREE.Vector3(0, 0, 10),
-    })
-
-    const ship = new Controllable(starDestroyer.scene, flightControls, [
-      { id: 'camera', action: thirdPersonCamera.onTargetUpdate },
-    ])
+    }).registerNewTarget(ship)
 
     renderer.render(scene, thirdPersonCamera.camera)
 
@@ -250,12 +248,16 @@ export default Vue.extend({
           clickable.object.children
         )
         if (intersections.length > 0 && this.playState === States.travel) {
-          ship.removeObserver('camera')
-          clickable.addObserver({
-            id: 'camera',
-            action: thirdPersonCamera.onTargetUpdate,
-          })
-          thirdPersonCamera.changeDefaults({
+          // ship.removeObserver('camera')
+          // clickable.addObserver({
+          //   id: 'camera',
+          //   action: thirdPersonCamera.onTargetUpdate,
+          // })
+          // thirdPersonCamera.changeDefaults({
+          //   defaultLookat: new THREE.Vector3(-5, 0, 0),
+          //   defaultOffset: new THREE.Vector3(0, 0, 10),
+          // })
+          thirdPersonCamera.removeCurrentTarget().registerNewTarget(clickable, {
             defaultLookat: new THREE.Vector3(-5, 0, 0),
             defaultOffset: new THREE.Vector3(0, 0, 10),
           })
@@ -266,12 +268,12 @@ export default Vue.extend({
           intersections.length === 0 &&
           this.playState === States.reading
         ) {
-          clickable.removeObserver('camera')
-          ship.addObserver({
-            id: 'camera',
-            action: thirdPersonCamera.onTargetUpdate,
-          })
-          thirdPersonCamera.changeDefaults({
+          // clickable.removeObserver('camera')
+          // ship.addObserver({
+          //   id: 'camera',
+          //   action: thirdPersonCamera.onTargetUpdate,
+          // })
+          thirdPersonCamera.removeCurrentTarget().registerNewTarget(ship, {
             defaultLookat: new THREE.Vector3(0, 0, 10),
             defaultOffset: new THREE.Vector3(0, 3, -7.5),
           })

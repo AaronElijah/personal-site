@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { Controllable } from 'lib/controllable'
+import { Observable } from 'lib/observable'
 
 interface IAddCameraToSubject {
   subject: THREE.Object3D
@@ -19,6 +21,8 @@ interface IThirdPersonCamera {
   defaultLookat: THREE.Vector3
   lerpAlpha?: number
 }
+
+type CameraTarget = THREE.Object3D | Observable
 
 function addPerspectiveCamera() {
   return new THREE.PerspectiveCamera(
@@ -64,6 +68,8 @@ class ThirdPersonCamera {
   private defaultLookat: THREE.Vector3
   private lerpAlpha: number
 
+  private target: CameraTarget | null = null
+
   constructor({
     camera,
     position,
@@ -82,12 +88,32 @@ class ThirdPersonCamera {
     this.targetQuaternion = quaternion.clone()
   }
 
-  onTargetUpdate = (target: THREE.Object3D) => {
-    if (!this.targetPosition.equals(target.position))
-      this.targetPosition = target.position.clone()
-    if (!this.targetQuaternion.equals(target.quaternion))
+  removeCurrentTarget() {
+    if (!this.target) throw new Error('No target to remove')
+    this.target = null
+    return this
+  }
+
+  registerNewTarget(
+    target: CameraTarget,
+    defaults?: {
+      defaultLookat?: THREE.Vector3
+      defaultOffset?: THREE.Vector3
+    }
+  ) {
+    if (this.target) throw new Error("Can't register more than one target")
+    if (defaults) this.changeDefaults(defaults)
+    this.target = target
+    return this
+  }
+
+  private onTargetUpdate = () => {
+    if (!this.target) return
+    if (!this.targetPosition.equals(this.target.position))
+      this.targetPosition = this.target.position.clone()
+    if (!this.targetQuaternion.equals(this.target.quaternion))
       this.targetQuaternion = new THREE.Quaternion().setFromEuler(
-        target.rotation
+        this.target.rotation
       )
   }
 
@@ -106,6 +132,7 @@ class ThirdPersonCamera {
   }
 
   update() {
+    this.onTargetUpdate()
     const newOffset = this.calculateIdealOffset()
     const newLookat = this.calculateIdealLookat()
     this.camera.position.lerp(newOffset, this.lerpAlpha)
