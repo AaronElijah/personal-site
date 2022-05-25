@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[5],{441:function(e,n,t){"use strict";t.r(n);var c=t(1),l=t(439),o=c.a.extend({name:"SpacePage",components:{"space-page":l.default}}),r=t(32),component=Object(r.a)(o,(function(){var e=this.$createElement;return(this._self._c||e)("space-page")}),[],!1,null,null,null);n.default=component.exports}}]);

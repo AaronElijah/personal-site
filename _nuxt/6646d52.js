@@ -1,1 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[10],{459:function(e,n,t){"use strict";t.r(n);var l=t(2),o=t(456),c=l.a.extend({name:"IndexPage",components:{"silly-page":o.default},layout:"side-bar"}),r=t(30),component=Object(r.a)(c,(function(){var e=this.$createElement;return(this._self._c||e)("silly-page")}),[],!1,null,null,null);n.default=component.exports}}]);
